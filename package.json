@@ -1,0 +1,62 @@
+{
+	"name": "curricula",
+	"version": "1.0.0",
+	"description": "An Electron application for managing curricula",
+	"main": "dist/main.js",
+	"scripts": {
+		"start": "electron .",
+		"build": "tsc",
+		"watch": "tsc -w",
+		"dev": "concurrently \"npm run watch\" \"wait-on dist/main.js && electron .\"",
+		"dist": "npm run build && electron-builder",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/eschiebel/curricula.git"
+	},
+	"keywords": [
+		"electron",
+		"typescript",
+		"curriculum"
+	],
+	"author": "",
+	"license": "MIT",
+	"build": {
+		"appId": "com.eschiebel.curricula",
+		"productName": "Curricula",
+		"files": [
+			"dist/**/*",
+			"renderer/**/*",
+			"package.json"
+		],
+		"directories": {
+			"buildResources": "build"
+		},
+		"mac": {
+			"target": "dmg"
+		},
+		"win": {
+			"target": "nsis"
+		},
+		"linux": {
+			"target": "AppImage"
+		}
+	},
+	"dependencies": {
+		"react": "^18.3.0",
+		"react-dom": "^18.3.0"
+	},
+	"devDependencies": {
+		"@dagrejs/dagre": "^1.1.8",
+		"@types/electron": "^1.6.10",
+		"@types/node": "^18.0.0",
+		"@types/react": "^19.2.5",
+		"@types/react-dom": "^19.2.3",
+		"concurrently": "^8.0.1",
+		"electron": "^39.2.0",
+		"electron-builder": "^24.0.0",
+		"typescript": "^5.0.0",
+		"wait-on": "^7.0.1"
+	}
+}

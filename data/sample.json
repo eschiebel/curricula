@@ -1,0 +1,49 @@
+{
+	"curriculumId": "cs-bs-2025",
+	"name": "B.S. in Computer Science",
+	"totalCredits": 120,
+	"semesters": [
+		{
+			"id": "fall-1",
+			"name": "Fall Year 1",
+			"order": 1,
+			"courseIds": ["MATH101", "CS101", "ENG101", "HIST101"]
+		},
+		{
+			"id": "spring-1",
+			"name": "Spring Year 1",
+			"order": 2,
+			"courseIds": ["MATH102", "CS102", "ENG102", "SCI101"]
+		}
+	],
+	"courses": [
+		{
+			"id": "CS101",
+			"name": "Introduction to Computer Science",
+			"credits": 3,
+			"prerequisiteIds": [],
+			"corequisiteIds": [],
+			"recommendedSemesterIds": ["fall-1"],
+			"metadata": {
+				"category": "major",
+				"notes": "Entry-level course."
+			}
+		},
+		{
+			"id": "CS102",
+			"name": "Data Structures",
+			"credits": 3,
+			"prerequisiteIds": ["CS101"],
+			"corequisiteIds": [],
+			"recommendedSemesterIds": ["spring-1"]
+		},
+		{
+			"id": "MATH102",
+			"name": "Calculus II",
+			"credits": 4,
+			"prerequisiteIds": ["MATH101"],
+			"corequisiteIds": [],
+			"recommendedSemesterIds": ["spring-1"]
+		}
+	]
+}
