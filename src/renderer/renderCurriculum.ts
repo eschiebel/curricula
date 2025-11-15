@@ -1,3 +1,5 @@
+import cytoscape from "cytoscape";
+
 export interface Course {
 	id: string;
 	name: string;
@@ -32,10 +34,6 @@ export function renderCurriculum(
 	if (!container) return;
 	setStatus(`Loaded: ${curriculum.name}`);
 
-	// Lazily require cytoscape to avoid issues in non-browser environments.
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const cytoscape = require("cytoscape") as typeof import("cytoscape");
-
 	while (container.firstChild) container.removeChild(container.firstChild);
 
 	const semestersSorted = [...(curriculum.semesters || [])].sort(
@@ -56,7 +54,7 @@ export function renderCurriculum(
 
 		const idx = semesterIndex[course.semesterId]++;
 		const x = columnMap[course.semesterId] ?? 0;
-		const y = idx * 100; // vertical spacing between courses within a semester
+		const y = idx * 120; // vertical spacing between courses within a semester
 
 		elements.push({
 			data: {

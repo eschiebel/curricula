@@ -9,7 +9,8 @@
 		"watch": "tsc -w",
 		"dev": "concurrently \"npm run watch\" \"wait-on dist/main.js && electron .\"",
 		"dist": "npm run build && electron-builder",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "vitest",
+		"test:ui": "vitest --ui"
 	},
 	"repository": {
 		"type": "git",
@@ -50,13 +51,16 @@
 	},
 	"devDependencies": {
 		"@types/electron": "^1.6.10",
-		"@types/node": "^18.0.0",
+		"@types/node": "^22.0.0",
 		"@types/react": "^19.2.5",
 		"@types/react-dom": "^19.2.3",
+		"@vitest/ui": "^4.0.9",
 		"concurrently": "^8.0.1",
 		"electron": "^39.2.0",
 		"electron-builder": "^24.0.0",
+		"jsdom": "^27.2.0",
 		"typescript": "^5.0.0",
+		"vitest": "^4.0.9",
 		"wait-on": "^7.0.1"
 	}
 }

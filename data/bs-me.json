@@ -235,7 +235,7 @@
 			"name": "Materials",
 			"credits": 3,
 			"prerequisiteIds": ["CHMY-141+142"],
-			"corequisiteIds": ["EGEN-350"],
+			"corequisiteIds": ["M-172"],
 			"semesterId": "y3-fall"
 		},
 		{
