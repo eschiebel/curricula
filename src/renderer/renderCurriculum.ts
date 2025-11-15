@@ -47,6 +47,23 @@ export function renderCurriculum(
 	const semesterIndex: Record<string, number> = {};
 	const elements: any[] = [];
 
+	// Add a header node at the top of each semester column
+	for (const sem of semestersSorted) {
+		const x = columnMap[sem.id] ?? 0;
+		const y = 0;
+		elements.push({
+			data: {
+				id: `semester:${sem.id}`,
+				label: sem.name,
+				semester: sem.id,
+				type: "semester-header",
+			},
+			position: { x, y },
+			grabbable: false,
+			selectable: false,
+		});
+	}
+
 	for (const course of curriculum.courses) {
 		if (semesterIndex[course.semesterId] == null) {
 			semesterIndex[course.semesterId] = 0;
@@ -54,7 +71,7 @@ export function renderCurriculum(
 
 		const idx = semesterIndex[course.semesterId]++;
 		const x = columnMap[course.semesterId] ?? 0;
-		const y = idx * 120; // vertical spacing between courses within a semester
+		const y = 120 + idx * 120; // vertical spacing between courses within a semester, offset below header
 
 		elements.push({
 			data: {
@@ -112,6 +129,19 @@ export function renderCurriculum(
 					shape: "round-rectangle",
 					width: 220,
 					height: 80,
+				},
+			},
+			{
+				selector: 'node[type = "semester-header"]',
+				style: {
+					"background-color": "#ffffff",
+					"border-color": "#ffffff",
+					"font-weight": "bold",
+					"text-valign": "center",
+					"text-halign": "center",
+					"font-size": "24px",
+					width: 220,
+					height: 40,
 				},
 			},
 			{
