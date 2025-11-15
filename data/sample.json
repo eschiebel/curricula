@@ -6,14 +6,12 @@
 		{
 			"id": "fall-1",
 			"name": "Fall Year 1",
-			"order": 1,
-			"courseIds": ["MATH101", "CS101", "ENG101", "HIST101"]
+			"order": 1
 		},
 		{
 			"id": "spring-1",
 			"name": "Spring Year 1",
-			"order": 2,
-			"courseIds": ["MATH102", "CS102", "ENG102", "SCI101"]
+			"order": 2
 		}
 	],
 	"courses": [
@@ -23,11 +21,7 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["fall-1"],
-			"metadata": {
-				"category": "major",
-				"notes": "Entry-level course."
-			}
+			"semesterId": "fall-1"
 		},
 		{
 			"id": "CS102",
@@ -35,15 +29,15 @@
 			"credits": 3,
 			"prerequisiteIds": ["CS101"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["spring-1"]
+			"semesterId": "spring-1"
 		},
 		{
 			"id": "MATH102",
 			"name": "Calculus II",
 			"credits": 4,
-			"prerequisiteIds": ["MATH101"],
+			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["spring-1"]
+			"semesterId": "spring-1"
 		}
 	]
 }

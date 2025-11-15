@@ -6,85 +6,43 @@
 		{
 			"id": "y1-fall",
 			"name": "Year 1 Fall",
-			"order": 1,
-			"courseIds": [
-				"CORE-1",
-				"EMEC-100",
-				"PHSX-220",
-				"M-171Q",
-				"US-CORE",
-				"EMEC-103"
-			]
+			"order": 1
 		},
 		{
 			"id": "y1-spring",
 			"name": "Year 1 Spring",
 			"order": 2,
-			"courseIds": [
-				"CORE-2",
-				"PHSX-222",
-				"M-172",
-				"CHMY-141-142",
-				"WRIT-101W",
-				"EMEC-203"
-			]
+			"courseIds": ["CORE-2", "PHSX-222", "M-172", "CHMY-141+142", "WRIT-101W"]
 		},
 		{
 			"id": "y2-fall",
 			"name": "Year 2 Fall",
-			"order": 3,
-			"courseIds": ["CORE-3", "EGEN-201", "M-273", "ETME-215", "ETME-216"]
+			"order": 3
 		},
 		{
 			"id": "y2-spring",
 			"name": "Year 2 Spring",
-			"order": 4,
-			"courseIds": ["EGEN-205", "EGEN-202", "EELE-250", "EGEN-350", "M-274"]
+			"order": 4
 		},
 		{
 			"id": "y3-fall",
 			"name": "Year 3 Fall",
-			"order": 5,
-			"courseIds": [
-				"EMEC-341",
-				"EMEC-250",
-				"EMAT-252",
-				"EGEN-335",
-				"EGEN-331",
-				"EMEC-303"
-			]
+			"order": 5
 		},
 		{
 			"id": "y3-spring",
 			"name": "Year 3 Spring",
-			"order": 6,
-			"courseIds": ["EMEC-342", "EGEN-310R", "EMEC-360", "EMEC-361", "EMEC-326"]
+			"order": 6
 		},
 		{
 			"id": "y4-fall",
 			"name": "Year 4 Fall",
-			"order": 7,
-			"courseIds": [
-				"PROF-ELECTIVE-1",
-				"PROF-ELECTIVE-2",
-				"EMEC-489R",
-				"EMEC-445",
-				"EGEN-330",
-				"EGEN-488",
-				"CORE-4"
-			]
+			"order": 7
 		},
 		{
 			"id": "y4-spring",
 			"name": "Year 4 Spring",
-			"order": 8,
-			"courseIds": [
-				"PROF-ELECTIVE-3",
-				"PROF-ELECTIVE-4",
-				"EMEC-499R",
-				"EMEC-405-or-EMEC-4XX",
-				"CORE-5"
-			]
+			"order": 8
 		}
 	],
 	"courses": [
@@ -94,23 +52,23 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-fall"]
+			"semesterId": "y1-fall"
 		},
 		{
 			"id": "EMEC-100",
-			"name": "Intro to Mechanical Engineering",
+			"name": "Intro to ME",
 			"credits": 1,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-fall"]
+			"semesterId": "y1-fall"
 		},
 		{
 			"id": "PHSX-220",
 			"name": "Physics I",
 			"credits": 4,
-			"prerequisiteIds": ["M-171Q"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-fall"]
+			"prerequisiteIds": [],
+			"corequisiteIds": ["M-171Q"],
+			"semesterId": "y1-fall"
 		},
 		{
 			"id": "M-171Q",
@@ -118,7 +76,7 @@
 			"credits": 4,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-fall"]
+			"semesterId": "y1-fall"
 		},
 		{
 			"id": "US-CORE",
@@ -126,7 +84,7 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-fall"]
+			"semesterId": "y1-fall"
 		},
 		{
 			"id": "EMEC-103",
@@ -134,7 +92,7 @@
 			"credits": 2,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-fall"]
+			"semesterId": "y1-fall"
 		},
 		{
 			"id": "CORE-2",
@@ -142,15 +100,15 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-spring"]
+			"semesterId": "y1-spring"
 		},
 		{
 			"id": "PHSX-222",
 			"name": "Physics II",
 			"credits": 4,
 			"prerequisiteIds": ["PHSX-220"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-spring"]
+			"corequisiteIds": ["M-172"],
+			"semesterId": "y1-spring"
 		},
 		{
 			"id": "M-172",
@@ -158,31 +116,23 @@
 			"credits": 4,
 			"prerequisiteIds": ["M-171Q"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-spring"]
+			"semesterId": "y1-spring"
 		},
 		{
-			"id": "CHMY-141-142",
+			"id": "CHMY-141+142",
 			"name": "Chemistry I (CHMY 141 + 142)",
 			"credits": 4,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-spring"]
+			"semesterId": "y1-spring"
 		},
 		{
 			"id": "WRIT-101W",
-			"name": "College Writing I (WRIT 101W)",
+			"name": "WRIT 101W",
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-spring"]
-		},
-		{
-			"id": "EMEC-203",
-			"name": "CAE II",
-			"credits": 2,
-			"prerequisiteIds": ["EMEC-103"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y1-spring"]
+			"semesterId": "y1-spring"
 		},
 		{
 			"id": "CORE-3",
@@ -190,15 +140,15 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-fall"]
+			"semesterId": "y2-fall"
 		},
 		{
 			"id": "EGEN-201",
 			"name": "Statics",
 			"credits": 3,
-			"prerequisiteIds": ["PHSX-220", "M-172"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-fall"]
+			"prerequisiteIds": ["PHSX-220"],
+			"corequisiteIds": ["M-273"],
+			"semesterId": "y2-fall"
 		},
 		{
 			"id": "M-273",
@@ -206,151 +156,167 @@
 			"credits": 4,
 			"prerequisiteIds": ["M-172"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-fall"]
+			"semesterId": "y2-fall"
 		},
 		{
 			"id": "ETME-215",
-			"name": "Manufacturing",
+			"name": "Manufact.",
 			"credits": 3,
-			"prerequisiteIds": [],
-			"corequisiteIds": ["ETME-216"],
-			"recommendedSemesterIds": ["y2-fall"]
+			"prerequisiteIds": ["CHMY-141+142"],
+			"corequisiteIds": [],
+			"semesterId": "y2-fall"
 		},
 		{
 			"id": "ETME-216",
-			"name": "Manufacturing Lab",
+			"name": "Manufact. Lab",
 			"credits": 1,
 			"prerequisiteIds": [],
 			"corequisiteIds": ["ETME-215"],
-			"recommendedSemesterIds": ["y2-fall"]
+			"semesterId": "y2-fall"
+		},
+		{
+			"id": "EMEC-203",
+			"name": "CAE II",
+			"credits": 2,
+			"prerequisiteIds": ["EMEC-103"],
+			"corequisiteIds": ["M-172"],
+			"semesterId": "y2-fall"
 		},
 		{
 			"id": "EGEN-205",
-			"name": "Mechanics of Materials",
+			"name": "Mech Mat",
 			"credits": 3,
 			"prerequisiteIds": ["EGEN-201"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-spring"]
+			"semesterId": "y2-spring"
 		},
 		{
 			"id": "EGEN-202",
 			"name": "Dynamics",
 			"credits": 3,
-			"prerequisiteIds": ["EGEN-201"],
+			"prerequisiteIds": ["EGEN-201", "M-273"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-spring"]
+			"semesterId": "y2-spring"
 		},
 		{
 			"id": "EELE-250",
 			"name": "Circuits",
 			"credits": 4,
-			"prerequisiteIds": ["PHSX-220"],
+			"prerequisiteIds": ["PHSX-222", "M-172"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-spring"]
+			"semesterId": "y2-spring"
 		},
 		{
 			"id": "EGEN-350",
-			"name": "Applied Data Analysis",
+			"name": "Appl Data Analysis",
 			"credits": 2,
 			"prerequisiteIds": ["M-172"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-spring"]
+			"semesterId": "y2-spring"
 		},
 		{
 			"id": "M-274",
-			"name": "Differential Equations",
+			"name": "Diff. Equations",
 			"credits": 4,
 			"prerequisiteIds": ["M-172"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y2-spring"]
+			"semesterId": "y2-spring"
 		},
 		{
 			"id": "EMEC-341",
-			"name": "Advanced Mechanics",
+			"name": "Adv. Mechanics",
 			"credits": 3,
-			"prerequisiteIds": ["EGEN-202", "EGEN-205", "M-273"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-fall"]
+			"prerequisiteIds": ["EGEN-205", "M-274"],
+			"corequisiteIds": ["ETME-216", "EGEN-350"],
+			"semesterId": "y3-fall"
 		},
 		{
 			"id": "EMEC-250",
 			"name": "Materials",
 			"credits": 3,
-			"prerequisiteIds": ["CHMY-141-142"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-fall"]
+			"prerequisiteIds": ["CHMY-141+142"],
+			"corequisiteIds": ["EGEN-350"],
+			"semesterId": "y3-fall"
 		},
 		{
 			"id": "EMAT-252",
 			"name": "Materials Lab",
 			"credits": 1,
-			"prerequisiteIds": ["EMEC-250"],
+			"prerequisiteIds": ["WRIT-101W"],
+			"corequisiteIds": ["EMEC-250"],
+			"semesterId": "y3-fall"
+		},
+		{
+			"id": "EMEC-320",
+			"name": "Thermo I",
+			"credits": 3,
+			"prerequisiteIds": ["EGEN-201"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-fall"]
+			"semesterId": "y3-fall"
 		},
 		{
 			"id": "EGEN-335",
 			"name": "Fluids",
 			"credits": 3,
-			"prerequisiteIds": ["EGEN-201", "M-273"],
+			"prerequisiteIds": ["EGEN-205"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-fall"]
-		},
-		{
-			"id": "EGEN-331",
-			"name": "Thermodynamics I",
-			"credits": 3,
-			"prerequisiteIds": ["EGEN-201", "M-273"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-fall"]
+			"semesterId": "y3-fall"
 		},
 		{
 			"id": "EMEC-303",
 			"name": "CAE III",
 			"credits": 3,
-			"prerequisiteIds": ["EMEC-203"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-fall"]
+			"prerequisiteIds": ["M-273", "EMEC-203"],
+			"corequisiteIds": ["EGEN-205"],
+			"semesterId": "y3-fall"
 		},
 		{
 			"id": "EMEC-342",
-			"name": "Mechanical Design",
+			"name": "Mech. Design",
 			"credits": 3,
-			"prerequisiteIds": ["EMEC-341", "EMEC-303"],
+			"prerequisiteIds": ["EMEC-341"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-spring"]
+			"semesterId": "y3-spring"
 		},
 		{
 			"id": "EGEN-310R",
-			"name": "Multidisciplinary Design",
+			"name": "Multi Discpl Design",
 			"credits": 3,
-			"prerequisiteIds": ["EMEC-342"],
+			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-spring"]
+			"semesterId": "y3-spring"
 		},
 		{
 			"id": "EMEC-360",
-			"name": "Measurements and Instrumentation",
+			"name": "Meas. & Instr.",
 			"credits": 3,
-			"prerequisiteIds": ["PHSX-222", "EELE-250"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-spring"]
+			"prerequisiteIds": ["EELE-250"],
+			"corequisiteIds": ["EGEN-350", "EMEC-320", "EMEC-303"],
+			"semesterId": "y3-spring"
 		},
 		{
 			"id": "EMEC-361",
-			"name": "Measurements Lab",
+			"name": "Meas. Lab",
 			"credits": 1,
 			"prerequisiteIds": [],
 			"corequisiteIds": ["EMEC-360"],
-			"recommendedSemesterIds": ["y3-spring"]
+			"semesterId": "y3-spring"
+		},
+		{
+			"id": "EMEC-321",
+			"name": "Thermo II",
+			"credits": 3,
+			"prerequisiteIds": ["EMEC-320"],
+			"corequisiteIds": [],
+			"semesterId": "y3-spring"
 		},
 		{
 			"id": "EMEC-326",
 			"name": "Heat Transfer",
 			"credits": 3,
-			"prerequisiteIds": ["EGEN-331", "EGEN-335"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y3-spring"]
+			"prerequisiteIds": ["EMEC-320", "EGEN-335"],
+			"corequisiteIds": ["EMEC-303"],
+			"semesterId": "y3-spring"
 		},
 		{
 			"id": "PROF-ELECTIVE-1",
@@ -358,7 +324,7 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-fall"]
+			"semesterId": "y4-fall"
 		},
 		{
 			"id": "PROF-ELECTIVE-2",
@@ -366,31 +332,31 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-fall"]
+			"semesterId": "y4-fall"
 		},
 		{
 			"id": "EMEC-489R",
 			"name": "Capstone I",
 			"credits": 2,
-			"prerequisiteIds": ["EMEC-342"],
-			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-fall"]
+			"prerequisiteIds": [],
+			"corequisiteIds": ["EMEC-360", "EMEC-361", "EMEC-321", "EMEC-326"],
+			"semesterId": "y4-fall"
 		},
 		{
 			"id": "EMEC-445",
 			"name": "Vibrations",
 			"credits": 3,
-			"prerequisiteIds": ["EMEC-341", "M-274"],
+			"prerequisiteIds": ["EMEC-303"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-fall"]
+			"semesterId": "y4-fall"
 		},
 		{
 			"id": "EGEN-330",
-			"name": "Business Fundamentals for Engineers",
+			"name": "Business Fund.",
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-fall"]
+			"semesterId": "y4-fall"
 		},
 		{
 			"id": "EGEN-488",
@@ -398,7 +364,7 @@
 			"credits": 0,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-fall"]
+			"semesterId": "y4-fall"
 		},
 		{
 			"id": "CORE-4",
@@ -406,7 +372,7 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-fall"]
+			"semesterId": "y4-fall"
 		},
 		{
 			"id": "PROF-ELECTIVE-3",
@@ -414,7 +380,7 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-spring"]
+			"semesterId": "y4-spring"
 		},
 		{
 			"id": "PROF-ELECTIVE-4",
@@ -422,7 +388,7 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-spring"]
+			"semesterId": "y4-spring"
 		},
 		{
 			"id": "EMEC-499R",
@@ -430,15 +396,15 @@
 			"credits": 2,
 			"prerequisiteIds": ["EMEC-489R"],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-spring"]
+			"semesterId": "y4-spring"
 		},
 		{
-			"id": "EMEC-405-or-EMEC-4XX",
+			"id": "EMEC-405+ | EMEC-436++",
 			"name": "EMEC 405 or Approved EMEC 4xx",
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-spring"]
+			"semesterId": "y4-spring"
 		},
 		{
 			"id": "CORE-5",
@@ -446,7 +412,7 @@
 			"credits": 3,
 			"prerequisiteIds": [],
 			"corequisiteIds": [],
-			"recommendedSemesterIds": ["y4-spring"]
+			"semesterId": "y4-spring"
 		}
 	]
 }

@@ -10,7 +10,7 @@ import path from "path";
 import { Curriculum, renderCurriculum } from "./renderCurriculum";
 
 export function CurriculumApp() {
-	const svgRef = useRef<SVGSVGElement | null>(null);
+	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [status, setStatusState] = useState<string>("No file loaded.");
 	const [statusError, setStatusError] = useState<boolean>(false);
 	const [curriculum, setCurriculum] = useState<Curriculum | null>(null);
@@ -23,19 +23,16 @@ export function CurriculumApp() {
 
 	useEffect(() => {
 		if (curriculum) {
-			renderCurriculum(curriculum, svgRef.current, setStatus);
+			renderCurriculum(curriculum, containerRef.current, setStatus);
 		}
 	}, [curriculum, setStatus]);
 
 	useEffect(() => {
-		const svg = svgRef.current;
-		if (!svg) return;
-		const baseWidth = Number(svg.dataset.baseWidth || "800");
-		const baseHeight = Number(svg.dataset.baseHeight || "600");
+		const container = containerRef.current;
+		if (!container) return;
 		const zoomFactor = zoom;
-		svg.style.transform = "";
-		svg.setAttribute("width", String(baseWidth * zoomFactor));
-		svg.setAttribute("height", String(baseHeight * zoomFactor));
+		container.style.transformOrigin = "0 0";
+		container.style.transform = `scale(${zoomFactor})`;
 	}, [zoom]);
 
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -130,7 +127,7 @@ export function CurriculumApp() {
 				</div>
 			</div>
 			<div className="graph-container">
-				<svg id="graph-svg" ref={svgRef} />
+				<div id="graph-cyto" ref={containerRef} />
 			</div>
 		</div>
 	);
