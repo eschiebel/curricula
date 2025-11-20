@@ -26,12 +26,19 @@ export interface Curriculum {
 
 export type StatusSetter = (text: string, isError?: boolean) => void;
 
+export interface RenderOptions {
+	movedCourseIds?: string[];
+	onCourseMoved?: (courseId: string, newSemesterId: string) => void;
+}
+
 export function renderCurriculum(
 	curriculum: Curriculum,
 	container: HTMLElement | null,
 	setStatus: StatusSetter,
+	options: RenderOptions = {},
 ): void {
 	if (!container) return;
+	console.log(">>> ", options?.movedCourseIds || []);
 	setStatus(`Loaded: ${curriculum.name}`);
 
 	while (container.firstChild) container.removeChild(container.firstChild);
@@ -73,11 +80,17 @@ export function renderCurriculum(
 		const x = columnMap[course.semesterId] ?? 0;
 		const y = 120 + idx * 120; // vertical spacing between courses within a semester, offset below header
 
+		let isMoved = false;
+		if (Array.isArray(options.movedCourseIds)) {
+			isMoved = options.movedCourseIds.includes(course.id);
+		}
+
 		elements.push({
 			data: {
 				id: course.id,
 				label: `${course.id}\n${course.name}\n${course.credits} cr`,
 				semester: course.semesterId,
+				moved: isMoved ? "true" : "false",
 			},
 			position: { x, y },
 		});
@@ -111,7 +124,7 @@ export function renderCurriculum(
 		}
 	}
 
-	cytoscape({
+	const cy = cytoscape({
 		container,
 		elements,
 		style: [
@@ -142,6 +155,14 @@ export function renderCurriculum(
 					"font-size": "24px",
 					width: 220,
 					height: 40,
+				},
+			},
+			{
+				selector: 'node[moved = "true"]',
+				style: {
+					"border-color": "#2980b9",
+					"border-style": "dashed",
+					"background-color": "#ffffff",
 				},
 			},
 			{
@@ -176,4 +197,34 @@ export function renderCurriculum(
 			name: "preset",
 		},
 	});
+
+	if (options.onCourseMoved) {
+		cy.on("dragfree", "node", (event) => {
+			const node = event.target;
+			const data = node.data();
+			if (!data || data.type === "semester-header") return;
+
+			const courseId: string = data.id;
+			const position = node.position();
+
+			let bestSemesterId: string | null = null;
+			let bestDistance = Number.POSITIVE_INFINITY;
+			for (const sem of semestersSorted) {
+				const columnX = columnMap[sem.id] ?? 0;
+				const dist = Math.abs(columnX - position.x);
+				if (dist < bestDistance) {
+					bestDistance = dist;
+					bestSemesterId = sem.id;
+				}
+			}
+
+			if (!bestSemesterId) return;
+			const currentSemesterId: string = data.semester;
+			if (bestSemesterId === currentSemesterId) return;
+
+			const callback = options.onCourseMoved;
+			if (!callback) return;
+			callback(courseId, bestSemesterId);
+		});
+	}
 }

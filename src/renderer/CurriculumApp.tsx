@@ -2,12 +2,12 @@ import React, {
 	useEffect,
 	useRef,
 	useState,
-	ChangeEvent,
+	type ChangeEvent,
 	useCallback,
 } from "react";
 import fs from "fs";
 import path from "path";
-import { Curriculum, renderCurriculum } from "./renderCurriculum";
+import { type Curriculum, renderCurriculum } from "./renderCurriculum";
 
 export function CurriculumApp() {
 	const containerRef = useRef<HTMLDivElement | null>(null);
@@ -15,17 +15,41 @@ export function CurriculumApp() {
 	const [statusError, setStatusError] = useState<boolean>(false);
 	const [curriculum, setCurriculum] = useState<Curriculum | null>(null);
 	const [zoom, setZoom] = useState<number>(1);
+	const [movedCourseIds, setMovedCourseIds] = useState<string[]>([]);
 
 	const setStatus = useCallback((text: string, isError = false) => {
 		setStatusState(text);
 		setStatusError(!!isError);
 	}, []);
 
+	const handleCourseMoved = useCallback(
+		(courseId: string, newSemesterId: string) => {
+			setCurriculum((prev) => {
+				if (!prev) return prev;
+				const existing = prev.courses.find((c) => c.id === courseId);
+				if (!existing || existing.semesterId === newSemesterId) return prev;
+				const updatedCourses = prev.courses.map((c) =>
+					c.id === courseId ? { ...c, semesterId: newSemesterId } : c,
+				);
+				return { ...prev, courses: updatedCourses };
+			});
+
+			setMovedCourseIds((prev) =>
+				prev.includes(courseId) ? prev : [...prev, courseId],
+			);
+			setStatus(`Moved ${courseId} to semester ${newSemesterId}`);
+		},
+		[setStatus],
+	);
+
 	useEffect(() => {
 		if (curriculum) {
-			renderCurriculum(curriculum, containerRef.current, setStatus);
+			renderCurriculum(curriculum, containerRef.current, setStatus, {
+				movedCourseIds,
+				onCourseMoved: handleCourseMoved,
+			});
 		}
-	}, [curriculum, setStatus]);
+	}, [curriculum, setStatus, movedCourseIds, handleCourseMoved]);
 
 	useEffect(() => {
 		const container = containerRef.current;
@@ -44,6 +68,7 @@ export function CurriculumApp() {
 			try {
 				const json = JSON.parse(String(reader.result));
 				setCurriculum(json);
+				setMovedCourseIds([]);
 			} catch (err) {
 				console.error(err);
 				setStatus("Failed to parse selected file as JSON", true);
@@ -65,6 +90,7 @@ export function CurriculumApp() {
 			const contents = fs.readFileSync(fullPath, "utf-8");
 			const json = JSON.parse(contents);
 			setCurriculum(json);
+			setMovedCourseIds([]);
 		} catch (err) {
 			console.error("Failed to load curriculum from", relativePath, err);
 			setStatus("Failed to load " + relativePath, true);
@@ -78,6 +104,32 @@ export function CurriculumApp() {
 	const zoomOut = useCallback(() => {
 		setZoom((z) => Math.max(0.2, z - 0.1));
 	}, []);
+
+	const handleSave = useCallback(() => {
+		if (!curriculum) {
+			setStatus("No curriculum loaded to save.", true);
+			return;
+		}
+
+		try {
+			const jsonString = JSON.stringify(curriculum, null, 2);
+			const blob = new Blob([jsonString], { type: "application/json" });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			const fileNameBase =
+				curriculum.curriculumId || curriculum.name || "curriculum";
+			link.href = url;
+			link.download = `${fileNameBase}-updated.json`;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			URL.revokeObjectURL(url);
+			setStatus("Saved updated curriculum JSON.");
+		} catch (err) {
+			console.error("Failed to save curriculum", err);
+			setStatus("Failed to save curriculum JSON.", true);
+		}
+	}, [curriculum, setStatus]);
 
 	return (
 		<div className="app-shell">
@@ -105,6 +157,18 @@ export function CurriculumApp() {
 					>
 						Load bs-me.json
 					</button>
+					<button
+						className="secondary"
+						type="button"
+						onClick={handleSave}
+						disabled={movedCourseIds.length === 0}
+						style={{
+							cursor: movedCourseIds.length === 0 ? "not-allowed" : "pointer",
+						}}
+					>
+						Save JSON
+					</button>
+
 					<button type="button" onClick={zoomOut}>
 						-
 					</button>

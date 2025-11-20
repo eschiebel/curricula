@@ -12,7 +12,10 @@ import {
 
 // Configure the mock implementation after imports
 const cytoscapeMock = cytoscape as unknown as Mock;
-cytoscapeMock.mockImplementation((opts: any) => opts);
+cytoscapeMock.mockImplementation((opts: any) => ({
+	...opts,
+	on: vi.fn(),
+}));
 
 describe("renderCurriculum", () => {
 	it("calls cytoscape with correct elements and container", () => {
