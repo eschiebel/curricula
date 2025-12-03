@@ -129,7 +129,14 @@ export function CurriculumApp() {
 	return (
 		<div className="app-shell">
 			<div className="top-bar">
-				<h1>Curriculum Visualizer</h1>
+				<div className="top-bar-title">
+					<img
+						src="/curricula.svg"
+						alt="Curricula logo"
+						className="top-bar-logo"
+					/>
+					<h1>Curriculum Visualizer</h1>
+				</div>
 				<div className="controls">
 					<label htmlFor="file-input">Load curriculum JSON:</label>
 					<input

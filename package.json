@@ -3,6 +3,7 @@
 	"private": true,
 	"version": "0.0.0",
 	"type": "module",
+	"homepage": "https://eschiebel.github.io/curricula",
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
@@ -14,7 +15,9 @@
 		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"check": "biome check .",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"predeploy": "npm run check && npm run build",
+		"deploy": "gh-pages -d dist"
 	},
 	"dependencies": {
 		"cytoscape": "^3.33.1",
