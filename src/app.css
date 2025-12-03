@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+#app {
+	@apply min-h-screen;
+}
+
+.read-the-docs {
+	color: #888;
+}
