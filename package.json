@@ -12,9 +12,9 @@
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "format": "biome format --write .",
-    "lint": "biome lint .",
-    "check": "biome check .",
+    "format": "biome format --write src",
+    "lint": "biome lint src",
+    "check": "biome check src --config-path ../biome.json",
     "typecheck": "tsc --noEmit",
     "predeploy": "npm run check && npm run build",
     "deploy": "gh-pages -d dist"
