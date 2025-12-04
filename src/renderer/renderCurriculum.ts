@@ -1,4 +1,4 @@
-import cytoscape from 'cytoscape'
+import cytoscape, { type ElementDefinition } from 'cytoscape'
 
 export interface Course {
   id: string
@@ -49,7 +49,7 @@ export function renderCurriculum(
   })
 
   const semesterIndex: Record<string, number> = {}
-  const elements: any[] = []
+  const elements: ElementDefinition[] = []
 
   // Add a header node at the top of each semester column
   for (const sem of semestersSorted) {
