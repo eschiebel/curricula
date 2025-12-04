@@ -73,7 +73,8 @@ export function CurriculumApp() {
   }
 
   const loadCurriculumFromPath = (relativePath: string) => {
-    fetch(`curricula/data/${relativePath}`)
+    const samplePath = `${import.meta.env.BASE_URL}/data/${relativePath}`
+    fetch(samplePath)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Failed to load ${relativePath}: ${response.status}`)
