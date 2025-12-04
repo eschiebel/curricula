@@ -1,43 +1,43 @@
 {
-	"curriculumId": "cs-bs-2025",
-	"name": "B.S. in Computer Science",
-	"totalCredits": 120,
-	"semesters": [
-		{
-			"id": "fall-1",
-			"name": "Fall Year 1",
-			"order": 1
-		},
-		{
-			"id": "spring-1",
-			"name": "Spring Year 1",
-			"order": 2
-		}
-	],
-	"courses": [
-		{
-			"id": "CS101",
-			"name": "Introduction to Computer Science",
-			"credits": 3,
-			"prerequisiteIds": [],
-			"corequisiteIds": [],
-			"semesterId": "fall-1"
-		},
-		{
-			"id": "CS102",
-			"name": "Data Structures",
-			"credits": 3,
-			"prerequisiteIds": ["CS101"],
-			"corequisiteIds": [],
-			"semesterId": "spring-1"
-		},
-		{
-			"id": "MATH102",
-			"name": "Calculus II",
-			"credits": 4,
-			"prerequisiteIds": [],
-			"corequisiteIds": [],
-			"semesterId": "spring-1"
-		}
-	]
+  "curriculumId": "cs-bs-2025",
+  "name": "B.S. in Computer Science",
+  "totalCredits": 120,
+  "semesters": [
+    {
+      "id": "fall-1",
+      "name": "Fall Year 1",
+      "order": 1
+    },
+    {
+      "id": "spring-1",
+      "name": "Spring Year 1",
+      "order": 2
+    }
+  ],
+  "courses": [
+    {
+      "id": "CS101",
+      "name": "Introduction to Computer Science",
+      "credits": 3,
+      "prerequisiteIds": [],
+      "corequisiteIds": [],
+      "semesterId": "fall-1"
+    },
+    {
+      "id": "CS102",
+      "name": "Data Structures",
+      "credits": 3,
+      "prerequisiteIds": ["CS101"],
+      "corequisiteIds": [],
+      "semesterId": "spring-1"
+    },
+    {
+      "id": "MATH102",
+      "name": "Calculus II",
+      "credits": 4,
+      "prerequisiteIds": [],
+      "corequisiteIds": [],
+      "semesterId": "spring-1"
+    }
+  ]
 }
