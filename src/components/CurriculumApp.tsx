@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import { type Curriculum, renderCurriculum } from './renderCurriculum'
+import { type Curriculum, CurriculumGraph } from './CurriculumGraph'
 
 export function CurriculumApp() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -31,15 +31,6 @@ export function CurriculumApp() {
     },
     [setStatus],
   )
-
-  useEffect(() => {
-    if (curriculum) {
-      renderCurriculum(curriculum, containerRef.current, setStatus, {
-        movedCourseIds,
-        onCourseMoved: handleCourseMoved,
-      })
-    }
-  }, [curriculum, setStatus, movedCourseIds, handleCourseMoved])
 
   useEffect(() => {
     const container = containerRef.current
@@ -184,8 +175,15 @@ export function CurriculumApp() {
           </span>
         </div>
       </div>
-      <div className="graph-container">
-        <div id="graph-cyto" ref={containerRef} />
+      <div className="graph-container" ref={containerRef}>
+        {curriculum && (
+          <CurriculumGraph
+            curriculum={curriculum}
+            setStatus={setStatus}
+            movedCourseIds={movedCourseIds}
+            onCourseMoved={handleCourseMoved}
+          />
+        )}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { render } from 'preact'
 import './index.css'
-import { CurriculumApp } from './renderer/CurriculumApp'
+import { CurriculumApp } from './components/CurriculumApp'
 
 const appElement = document.getElementById('app')
 if (appElement) {
