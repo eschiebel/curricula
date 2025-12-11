@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import { type Curriculum, CurriculumGraph } from './CurriculumGraph'
+import type { Curriculum } from './CurriculumGraph'
+import { CurriculumView } from './CurriculumView'
 
 export function CurriculumApp() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -177,7 +178,7 @@ export function CurriculumApp() {
       </div>
       <div className="graph-container" ref={containerRef}>
         {curriculum && (
-          <CurriculumGraph
+          <CurriculumView
             curriculum={curriculum}
             setStatus={setStatus}
             movedCourseIds={movedCourseIds}

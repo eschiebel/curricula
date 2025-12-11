@@ -116,3 +116,8 @@ button:disabled {
   border-top-style: dashed;
   border-top-color: #8e44ad;
 }
+
+.curriculum-list-offscreen {
+  position: absolute;
+  left: -9999px;
+}
