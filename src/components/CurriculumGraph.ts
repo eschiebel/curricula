@@ -31,6 +31,8 @@ export type StatusSetter = (text: string, isError?: boolean) => void
 export interface RenderOptions {
   movedCourseIds?: string[]
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
+  selectedCourseId?: string | null
+  onCourseSelect: (courseId: string) => void
 }
 
 export interface CurriculumGraphProps extends RenderOptions {
@@ -39,8 +41,10 @@ export interface CurriculumGraphProps extends RenderOptions {
 }
 
 export function CurriculumGraph(props: CurriculumGraphProps) {
-  const { curriculum, setStatus, movedCourseIds, onCourseMoved } = props
+  const { curriculum, setStatus, movedCourseIds, onCourseMoved, selectedCourseId, onCourseSelect } =
+    props
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const cyRef = useRef<Core | null>(null)
 
   useEffect(() => {
     const container = containerRef.current
@@ -170,6 +174,14 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           },
         },
         {
+          selector: 'node:selected',
+          style: {
+            'border-color': '#e67e22',
+            'border-width': 3,
+            'background-color': '#fff7e6',
+          },
+        },
+        {
           selector: 'edge',
           style: {
             width: 2,
@@ -200,6 +212,8 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       },
     })
 
+    cyRef.current = cy
+
     if (onCourseMoved) {
       cy.on('dragfree', 'node', (event) => {
         const node = event.target
@@ -228,10 +242,42 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       })
     }
 
+    if (onCourseSelect) {
+      cy.on('tap', 'node', (event) => {
+        const node = event.target
+        const data = node.data()
+        if (!data || data.type === 'semester-header') return
+
+        const courseId: string = data.id
+
+        cy.batch(() => {
+          cy.$('node').unselect()
+          node.select()
+        })
+
+        onCourseSelect(courseId)
+      })
+    }
+
     return () => {
       cy.destroy()
+      cyRef.current = null
     }
-  }, [curriculum, setStatus, movedCourseIds, onCourseMoved])
+  }, [curriculum, setStatus, movedCourseIds, onCourseMoved, onCourseSelect])
+
+  useEffect(() => {
+    const cy = cyRef.current
+    if (!cy) return
+
+    cy.batch(() => {
+      cy.$('node').unselect()
+      if (!selectedCourseId) return
+      const node = cy.$(`node[id = "${selectedCourseId}"]`)
+      if (node.length > 0) {
+        node.select()
+      }
+    })
+  }, [selectedCourseId])
 
   return h('div', { id: 'graph-cyto', ref: containerRef })
 }
