@@ -25,7 +25,7 @@ export function CurriculumView(props: CurriculumViewProps) {
         selectedCourseId={selectedCourseId}
         onCourseSelect={setSelectedCourseId}
       />
-      <CurriculumList curriculum={curriculum} />
+      <CurriculumList curriculum={curriculum} selectedCourseId={selectedCourseId} />
     </>
   )
 }
