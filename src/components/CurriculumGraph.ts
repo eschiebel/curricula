@@ -33,6 +33,7 @@ export interface RenderOptions {
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
   selectedCourseId?: string | null
   onCourseSelect: (courseId: string) => void
+  onCourseMoveBySemester?: (courseId: string, direction: 'previous' | 'next') => void
 }
 
 export interface CurriculumGraphProps extends RenderOptions {
@@ -41,8 +42,15 @@ export interface CurriculumGraphProps extends RenderOptions {
 }
 
 export function CurriculumGraph(props: CurriculumGraphProps) {
-  const { curriculum, setStatus, movedCourseIds, onCourseMoved, selectedCourseId, onCourseSelect } =
-    props
+  const {
+    curriculum,
+    setStatus,
+    movedCourseIds,
+    onCourseMoved,
+    selectedCourseId,
+    onCourseSelect,
+    onCourseMoveBySemester,
+  } = props
   const containerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<Core | null>(null)
 
@@ -238,6 +246,19 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
         const currentSemesterId: string = data.semester
         if (bestSemesterId === currentSemesterId) return
 
+        // Inform parent of move direction, if requested
+        if (onCourseMoveBySemester) {
+          const fromIndex = semestersSorted.findIndex((s) => s.id === currentSemesterId)
+          const toIndex = semestersSorted.findIndex((s) => s.id === bestSemesterId)
+          if (fromIndex >= 0 && toIndex >= 0 && fromIndex !== toIndex) {
+            const direction: 'previous' | 'next' = toIndex > fromIndex ? 'next' : 'previous'
+            onCourseMoveBySemester(courseId, direction)
+          }
+        }
+
+        // Ensure the dragged course becomes the selected course
+        onCourseSelect(courseId)
+
         onCourseMoved(courseId, bestSemesterId)
       })
     }
@@ -277,7 +298,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
         node.select()
       }
     })
-  }, [selectedCourseId])
+  }, [selectedCourseId, curriculum])
 
   return h('div', { id: 'graph-cyto', ref: containerRef })
 }

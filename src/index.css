@@ -6,6 +6,12 @@ body {
   background-color: #f5f5f5;
 }
 
+#screenreader-alert {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -85,13 +91,29 @@ button:disabled {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+
+  /* new for dev: show graph + list side by side */
+  display: flex;
+  flex-direction: row;
+  overflow: visible; /* or at least not hidden while debugging */
 }
 
 #graph-cyto {
   display: block;
   width: 100%;
   height: 100%;
+  flex: 3; /* take most of the width */
+}
+
+.curriculum-list-offscreen {
+  /* dev layout instead of offscreen */
+  flex: 1;
+  padding: 8px;
+  overflow: auto;
+}
+
+li.course-selected {
+  outline: 2px solid #3498db;
 }
 
 .legend {
@@ -115,9 +137,4 @@ button:disabled {
 .legend-line.coreq {
   border-top-style: dashed;
   border-top-color: #8e44ad;
-}
-
-.curriculum-list-offscreen {
-  position: absolute;
-  left: -9999px;
 }
