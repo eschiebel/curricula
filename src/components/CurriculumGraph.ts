@@ -34,6 +34,7 @@ export interface RenderOptions {
   selectedCourseId?: string | null
   onCourseSelect: (courseId: string) => void
   onCourseMoveBySemester?: (courseId: string, direction: 'previous' | 'next') => void
+  focusedSemesterId?: string | null
 }
 
 export interface CurriculumGraphProps extends RenderOptions {
@@ -50,6 +51,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     selectedCourseId,
     onCourseSelect,
     onCourseMoveBySemester,
+    focusedSemesterId,
   } = props
   const containerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<Core | null>(null)
@@ -182,6 +184,13 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           },
         },
         {
+          selector: 'node[type = "semester-header"].focused-semester',
+          style: {
+            'border-color': '#e67e22',
+            'border-width': 3,
+          },
+        },
+        {
           selector: 'node:selected',
           style: {
             'border-color': '#e67e22',
@@ -299,6 +308,20 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       }
     })
   }, [selectedCourseId, curriculum])
+
+  useEffect(() => {
+    const cy = cyRef.current
+    if (!cy) return
+
+    cy.batch(() => {
+      cy.$('node[type = "semester-header"]').removeClass('focused-semester')
+      if (!focusedSemesterId) return
+      const header = cy.$(`node[id = "semester:${focusedSemesterId}"]`)
+      if (header.length > 0) {
+        header.addClass('focused-semester')
+      }
+    })
+  }, [focusedSemesterId])
 
   return h('div', { id: 'graph-cyto', ref: containerRef })
 }

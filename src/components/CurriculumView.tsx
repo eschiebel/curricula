@@ -15,6 +15,7 @@ export function CurriculumView(props: CurriculumViewProps) {
   const { curriculum, setStatus, movedCourseIds, onCourseMoved } = props
 
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
+  const [focusedSemesterId, setFocusedSemesterId] = useState<string | null>(null)
 
   const handleCourseMoveBySemester = useCallback(
     (courseId: string, direction: 'previous' | 'next') => {
@@ -71,12 +72,14 @@ export function CurriculumView(props: CurriculumViewProps) {
         selectedCourseId={selectedCourseId}
         onCourseSelect={setSelectedCourseId}
         onCourseMoveBySemester={handleCourseMoveBySemester}
+        focusedSemesterId={focusedSemesterId}
       />
       <CurriculumList
         curriculum={curriculum}
         selectedCourseId={selectedCourseId}
         onCourseSelect={setSelectedCourseId}
         onCourseMoveBySemester={handleCourseMoveBySemester}
+        onSemesterFocus={setFocusedSemesterId}
       />
     </>
   )

@@ -13,6 +13,14 @@ To provide your own curriculum, create the JSON file and load it using the "Choo
 Once loaded, you can drag and drop courses between session/semester/quarter columns to adjust when your student will take each course.
 After making changes you can use the "Save JSON" button to save your changes to a new JSON file.
 
+## A11y
+
+1. TAB until a semester is highlighted
+1. Up/Down arrow keys move amonng courses in the semester
+1. Shift-Left/Right arrow keys move the selected course to the previous/next semester
+1. ESC unselects the selected course (not sure if this is useful or not)
+
+
 ## Building
 
 To build the app, run 

@@ -6,10 +6,12 @@ export interface CurriculumListProps {
   selectedCourseId: string | null
   onCourseSelect: (courseId: string) => void
   onCourseMoveBySemester: (courseId: string, direction: 'previous' | 'next') => void
+  onSemesterFocus: (semesterId: string | null) => void
 }
 
 export function CurriculumList(props: CurriculumListProps) {
-  const { curriculum, selectedCourseId, onCourseSelect, onCourseMoveBySemester } = props
+  const { curriculum, selectedCourseId, onCourseSelect, onCourseMoveBySemester, onSemesterFocus } =
+    props
   const semestersSorted: Semester[] = [...(curriculum.semesters || [])].sort(
     (a, b) => a.order - b.order,
   )
@@ -108,6 +110,7 @@ export function CurriculumList(props: CurriculumListProps) {
             tabIndex={0}
             data-semester-id={semester.id}
             onKeyDown={handleListKeyDown}
+            onFocus={() => onSemesterFocus(semester.id)}
           >
             {courses.map((course) => {
               const isSelected = course.id === selectedCourseId
@@ -122,6 +125,7 @@ export function CurriculumList(props: CurriculumListProps) {
                   ref={(el) => {
                     itemRefs.current[course.id] = el
                   }}
+                  onFocus={() => onSemesterFocus(semester.id)}
                 >
                   {course.id}
                 </li>

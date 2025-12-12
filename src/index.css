@@ -105,11 +105,26 @@ button:disabled {
   flex: 3; /* take most of the width */
 }
 
+/*
 .curriculum-list-offscreen {
-  /* dev layout instead of offscreen */
   flex: 1;
   padding: 8px;
   overflow: auto;
+}
+*/
+
+.curriculum-list-offscreen {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  /* Hide visually without impacting layout */
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 li.course-selected {
