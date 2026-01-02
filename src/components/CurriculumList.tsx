@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'preact/hooks'
+import { getCurriculumTrackInfo } from './CurriculumGraph'
 import type { Curriculum, Semester, Course } from './CurriculumGraph'
 
 export interface CurriculumListProps {
@@ -16,12 +17,45 @@ export function CurriculumList(props: CurriculumListProps) {
     (a, b) => a.order - b.order,
   )
 
+  const courseOrderIndex = new Map<string, number>()
+  for (let i = 0; i < (curriculum.courses || []).length; i += 1) {
+    const c = curriculum.courses[i]
+    if (c) courseOrderIndex.set(c.id, i)
+  }
+
+  const trackIdsPresent = new Set<string>()
+  for (const course of curriculum.courses || []) {
+    trackIdsPresent.add(course.trackId ?? 'untracked')
+  }
+
+  const trackOrder = getCurriculumTrackInfo(curriculum).trackOrder
+  const trackLaneIndex = new Map<string, number>()
+  trackOrder.forEach((trackId, i) => {
+    trackLaneIndex.set(trackId, i)
+  })
+
   const coursesBySemester: Record<string, Course[]> = {}
   for (const course of curriculum.courses || []) {
     if (!coursesBySemester[course.semesterId]) {
       coursesBySemester[course.semesterId] = []
     }
     coursesBySemester[course.semesterId].push(course)
+  }
+
+  for (const semesterId of Object.keys(coursesBySemester)) {
+    coursesBySemester[semesterId]?.sort((a, b) => {
+      const aTrack = a.trackId ?? 'untracked'
+      const bTrack = b.trackId ?? 'untracked'
+      const aLane = trackLaneIndex.get(aTrack) ?? trackOrder.length
+      const bLane = trackLaneIndex.get(bTrack) ?? trackOrder.length
+      if (aLane !== bLane) return aLane - bLane
+
+      const aIdx = courseOrderIndex.get(a.id) ?? Number.POSITIVE_INFINITY
+      const bIdx = courseOrderIndex.get(b.id) ?? Number.POSITIVE_INFINITY
+      if (aIdx !== bIdx) return aIdx - bIdx
+
+      return a.id.localeCompare(b.id)
+    })
   }
 
   const itemRefs = useRef<Record<string, HTMLLIElement | null>>({})

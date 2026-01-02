@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import type { Curriculum } from './CurriculumGraph'
 import { CurriculumView } from './CurriculumView'
+import { TrackDialog } from './TrackDialog'
 
 export function CurriculumApp() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -9,6 +10,7 @@ export function CurriculumApp() {
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null)
   const [zoom, setZoom] = useState<number>(1)
   const [movedCourseIds, setMovedCourseIds] = useState<string[]>([])
+  const [trackDialogOpen, setTrackDialogOpen] = useState<boolean>(false)
 
   const setStatus = useCallback((text: string, isError = false) => {
     setStatusState(text)
@@ -116,6 +118,19 @@ export function CurriculumApp() {
     }
   }, [curriculum, setStatus])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' || event.key === 'Esc') {
+        setTrackDialogOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   return (
     <div className="app-shell">
       <div className="top-bar">
@@ -131,6 +146,15 @@ export function CurriculumApp() {
             accept="application/json,.json"
             onChange={handleFileChange}
           />
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => setTrackDialogOpen((prev) => !prev)}
+            aria-expanded={trackDialogOpen}
+            aria-controls="track-dialog"
+          >
+            Track legend
+          </button>
           <button
             className="secondary"
             type="button"
@@ -175,6 +199,12 @@ export function CurriculumApp() {
             Corequisite
           </span>
         </div>
+
+        <TrackDialog
+          curriculum={curriculum}
+          open={trackDialogOpen}
+          onClose={() => setTrackDialogOpen(false)}
+        />
       </div>
       <div className="graph-container" ref={containerRef}>
         {curriculum && (
