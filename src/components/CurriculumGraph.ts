@@ -10,6 +10,7 @@ export interface Course {
   corequisiteIds: string[]
   /** Primary semester this course belongs to. */
   semesterId: string
+  trackId?: string
 }
 
 export interface Semester {
@@ -22,8 +23,17 @@ export interface Curriculum {
   curriculumId: string
   name: string
   totalCredits: number
+  tracks?: TrackDefinition[]
   semesters: Semester[]
   courses: Course[]
+}
+
+export type TrackDefinition = Record<string, string> | { id: string; name: string }
+
+export interface TrackInfo {
+  trackOrder: string[]
+  trackNameById: Record<string, string>
+  trackColorById: Record<string, string>
 }
 
 export type StatusSetter = (text: string, isError?: boolean) => void
@@ -40,6 +50,141 @@ export interface RenderOptions {
 export interface CurriculumGraphProps extends RenderOptions {
   curriculum: Curriculum
   setStatus: StatusSetter
+}
+
+function clamp01(n: number) {
+  if (n < 0) return 0
+  if (n > 1) return 1
+  return n
+}
+
+function hslToHex(h: number, s: number, l: number) {
+  const hh = ((h % 360) + 360) % 360
+  const ss = clamp01(s / 100)
+  const ll = clamp01(l / 100)
+
+  const c = (1 - Math.abs(2 * ll - 1)) * ss
+  const x = c * (1 - Math.abs(((hh / 60) % 2) - 1))
+  const m = ll - c / 2
+
+  let r = 0
+  let g = 0
+  let b = 0
+  if (hh < 60) {
+    r = c
+    g = x
+    b = 0
+  } else if (hh < 120) {
+    r = x
+    g = c
+    b = 0
+  } else if (hh < 180) {
+    r = 0
+    g = c
+    b = x
+  } else if (hh < 240) {
+    r = 0
+    g = x
+    b = c
+  } else if (hh < 300) {
+    r = x
+    g = 0
+    b = c
+  } else {
+    r = c
+    g = 0
+    b = x
+  }
+
+  const toHex = (v: number) => {
+    const n = Math.round((v + m) * 255)
+    return n.toString(16).padStart(2, '0')
+  }
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+function parseTrackDefinitions(tracks?: TrackDefinition[]) {
+  const order: string[] = []
+  const nameById: Record<string, string> = {}
+
+  if (!Array.isArray(tracks)) {
+    return { order, nameById }
+  }
+
+  for (const entry of tracks) {
+    if (!entry || typeof entry !== 'object') continue
+
+    if ('id' in entry && 'name' in entry) {
+      const maybeId = (entry as { id?: unknown }).id
+      const maybeName = (entry as { name?: unknown }).name
+      if (typeof maybeId === 'string' && typeof maybeName === 'string') {
+        if (nameById[maybeId] == null) order.push(maybeId)
+        nameById[maybeId] = maybeName
+      }
+      continue
+    }
+
+    for (const [k, v] of Object.entries(entry as Record<string, unknown>)) {
+      if (typeof k !== 'string' || typeof v !== 'string') continue
+      if (nameById[k] == null) order.push(k)
+      nameById[k] = v
+    }
+  }
+
+  return { order, nameById }
+}
+
+function buildTrackColors(trackOrder: string[]) {
+  const colorById: Record<string, string> = {}
+  const ids = trackOrder.filter((t) => t !== 'untracked')
+  const n = ids.length
+
+  for (let i = 0; i < n; i += 1) {
+    const trackId = ids[i]
+    const hue = (360 * i) / Math.max(1, n)
+    colorById[trackId] = hslToHex(hue, 65, 90)
+  }
+
+  if (trackOrder.includes('untracked')) {
+    colorById.untracked = '#ecf0f1'
+  }
+
+  return colorById
+}
+
+export function getCurriculumTrackInfo(curriculum: Curriculum): TrackInfo {
+  const { order: configuredOrder, nameById: configuredNames } = parseTrackDefinitions(
+    curriculum.tracks,
+  )
+  const trackIdsPresent = new Set<string>()
+  for (const course of curriculum.courses || []) {
+    trackIdsPresent.add(course.trackId ?? 'untracked')
+  }
+
+  const unknownTrackOrder = [...trackIdsPresent]
+    .filter((t) => !configuredOrder.includes(t))
+    .sort((a, b) => a.localeCompare(b))
+
+  const trackOrder = [...configuredOrder, ...unknownTrackOrder].filter((t) =>
+    trackIdsPresent.has(t),
+  )
+
+  const trackNameById: Record<string, string> = { ...configuredNames }
+  for (const trackId of trackOrder) {
+    if (trackNameById[trackId] == null) {
+      trackNameById[trackId] = trackId
+    }
+  }
+
+  const trackColorById = buildTrackColors(trackOrder)
+
+  return { trackOrder, trackNameById, trackColorById }
+}
+
+export function getTrackColor(trackInfo: TrackInfo, trackId?: string) {
+  const id = trackId ?? 'untracked'
+  return trackInfo.trackColorById[id] ?? '#ecf0f1'
 }
 
 export function CurriculumGraph(props: CurriculumGraphProps) {
@@ -70,7 +215,14 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       columnMap[sem.id] = i * 300
     })
 
-    const semesterIndex: Record<string, number> = {}
+    const trackInfo = getCurriculumTrackInfo(curriculum)
+    const trackOrder = trackInfo.trackOrder
+    const trackLaneIndex: Record<string, number> = {}
+    trackOrder.forEach((trackId, i) => {
+      trackLaneIndex[trackId] = i
+    })
+
+    const laneSemesterIndex: Record<string, Record<string, number>> = {}
     const elements: ElementDefinition[] = []
 
     for (const sem of semestersSorted) {
@@ -90,13 +242,22 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     }
 
     for (const course of curriculum.courses) {
-      if (semesterIndex[course.semesterId] == null) {
-        semesterIndex[course.semesterId] = 0
+      const laneTrackId = course.trackId ?? 'untracked'
+
+      if (!laneSemesterIndex[laneTrackId]) {
+        laneSemesterIndex[laneTrackId] = {}
       }
 
-      const idx = semesterIndex[course.semesterId]++
+      const bySemester = laneSemesterIndex[laneTrackId]
+      if (bySemester[course.semesterId] == null) {
+        bySemester[course.semesterId] = 0
+      }
+
+      const idx = bySemester[course.semesterId]++
       const x = columnMap[course.semesterId] ?? 0
-      const y = 120 + idx * 120
+      const lane = trackLaneIndex[laneTrackId] ?? trackOrder.length
+      const laneBaseY = 120 + lane * 200
+      const y = laneBaseY + idx * 95
 
       let isMoved = false
       if (Array.isArray(movedCourseIds)) {
@@ -109,6 +270,8 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           label: `${course.id}\n${course.name}\n${course.credits} cr`,
           semester: course.semesterId,
           moved: isMoved ? 'true' : 'false',
+          trackId: laneTrackId,
+          trackColor: getTrackColor(trackInfo, laneTrackId),
         },
         position: { x, y },
       })
@@ -154,7 +317,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
             'text-wrap': 'wrap',
             'text-max-width': '200px',
             color: '#000',
-            'background-color': '#ecf0f1',
+            'background-color': 'data(trackColor)',
             'border-color': '#34495e',
             'border-width': 1.5,
             shape: 'round-rectangle',
@@ -180,7 +343,6 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           style: {
             'border-color': '#2980b9',
             'border-style': 'dashed',
-            'background-color': '#ffffff',
           },
         },
         {
@@ -195,7 +357,8 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           style: {
             'border-color': '#e67e22',
             'border-width': 3,
-            'background-color': '#fff7e6',
+            'overlay-color': '#fff7e6',
+            'overlay-opacity': 0.35,
           },
         },
         {

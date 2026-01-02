@@ -22,6 +22,7 @@ body {
   padding: 12px 20px;
   background: #fff9c4;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
   z-index: 1;
 }
 
@@ -152,4 +153,64 @@ li.course-selected {
 .legend-line.coreq {
   border-top-style: dashed;
   border-top-color: #8e44ad;
+}
+
+.track-dialog {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  width: 320px;
+  max-height: calc(100vh - 80px);
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 10px;
+  z-index: 5;
+}
+
+.track-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.track-dialog-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #2c3e50;
+}
+
+.track-dialog-empty {
+  font-size: 12px;
+  color: #555;
+}
+
+.track-dialog-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.track-dialog-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.track-swatch {
+  width: 18px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.track-id {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
 }
