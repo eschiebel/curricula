@@ -52,6 +52,15 @@ export interface CurriculumGraphProps extends RenderOptions {
   setStatus: StatusSetter
 }
 
+const violationHatchDataUri =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">' +
+      '<path d="M-3 3 L3 -3 M0 12 L12 0 M9 15 L15 9" stroke="rgba(0,0,0,0.35)" stroke-width="1"/>' +
+      '<path d="M15 3 L9 -3 M12 12 L0 0 M3 15 L-3 9" stroke="rgba(0,0,0,0.35)" stroke-width="1"/>' +
+      '</svg>',
+  )
+
 function clamp01(n: number) {
   if (n < 0) return 0
   if (n > 1) return 1
@@ -200,6 +209,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
   } = props
   const containerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<Core | null>(null)
+  const viewportRef = useRef<{ zoom: number; pan: { x: number; y: number } } | null>(null)
 
   useEffect(() => {
     const container = containerRef.current
@@ -210,6 +220,52 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     while (container.firstChild) container.removeChild(container.firstChild)
 
     const semestersSorted = [...(curriculum.semesters || [])].sort((a, b) => a.order - b.order)
+    const semesterOrderById: Record<string, number> = {}
+    semestersSorted.forEach((sem, i) => {
+      semesterOrderById[sem.id] = i
+    })
+
+    const courseById: Record<string, Course> = {}
+    for (const course of curriculum.courses) {
+      courseById[course.id] = course
+    }
+
+    const violatingCourseIds = new Set<string>()
+    const violatingEdgeIds = new Set<string>()
+    for (const course of curriculum.courses) {
+      const courseSemOrder = semesterOrderById[course.semesterId] ?? Number.POSITIVE_INFINITY
+
+      if (Array.isArray(course.prerequisiteIds)) {
+        for (const prereqId of course.prerequisiteIds) {
+          if (!prereqId) continue
+          const prereq = courseById[prereqId]
+          if (!prereq) continue
+          const prereqSemOrder = semesterOrderById[prereq.semesterId] ?? Number.POSITIVE_INFINITY
+
+          // Course must be strictly AFTER prerequisite.
+          if (courseSemOrder <= prereqSemOrder) {
+            violatingCourseIds.add(course.id)
+            violatingEdgeIds.add(`${prereqId}->${course.id}`)
+          }
+        }
+      }
+
+      if (Array.isArray(course.corequisiteIds)) {
+        for (const coreqId of course.corequisiteIds) {
+          if (!coreqId) continue
+          const coreq = courseById[coreqId]
+          if (!coreq) continue
+          const coreqSemOrder = semesterOrderById[coreq.semesterId] ?? Number.POSITIVE_INFINITY
+
+          // Course must NOT be before a corequisite (coreq must be same semester or earlier).
+          if (courseSemOrder < coreqSemOrder) {
+            violatingCourseIds.add(course.id)
+            violatingEdgeIds.add(`coreq:${coreqId}->${course.id}`)
+          }
+        }
+      }
+    }
+
     const columnMap: Record<string, number> = {}
     semestersSorted.forEach((sem, i) => {
       columnMap[sem.id] = i * 300
@@ -270,6 +326,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           label: `${course.id}\n${course.name}\n${course.credits} cr`,
           semester: course.semesterId,
           moved: isMoved ? 'true' : 'false',
+          violation: violatingCourseIds.has(course.id) ? 'true' : 'false',
           trackId: laneTrackId,
           trackColor: getTrackColor(trackInfo, laneTrackId),
         },
@@ -286,6 +343,8 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
               id: `${prereq}->${course.id}`,
               source: prereq,
               target: course.id,
+              type: 'prereq',
+              violation: violatingEdgeIds.has(`${prereq}->${course.id}`) ? 'true' : 'false',
             },
           })
         }
@@ -299,6 +358,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
               source: coreq,
               target: course.id,
               type: 'coreq',
+              violation: violatingEdgeIds.has(`coreq:${coreq}->${course.id}`) ? 'true' : 'false',
             },
           })
         }
@@ -346,6 +406,17 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           },
         },
         {
+          selector: 'node[violation = "true"]',
+          style: {
+            'border-color': '#c0392b',
+            'border-width': 3,
+            'background-image': `url("${violationHatchDataUri}")`,
+            'background-image-opacity': 1,
+            'background-repeat': 'repeat',
+            'background-fit': 'none',
+          },
+        },
+        {
           selector: 'node[type = "semester-header"].focused-semester',
           style: {
             'border-color': '#e67e22',
@@ -386,6 +457,14 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
             'target-arrow-shape': 'triangle',
           },
         },
+        {
+          selector: 'edge[violation = "true"]',
+          style: {
+            width: 4,
+            'line-color': '#c0392b',
+            'target-arrow-color': '#c0392b',
+          },
+        },
       ],
       layout: {
         name: 'preset',
@@ -393,6 +472,11 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     })
 
     cyRef.current = cy
+
+    if (viewportRef.current) {
+      cy.zoom(viewportRef.current.zoom)
+      cy.pan(viewportRef.current.pan)
+    }
 
     if (onCourseMoved) {
       cy.on('dragfree', 'node', (event) => {
@@ -453,6 +537,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     }
 
     return () => {
+      viewportRef.current = { zoom: cy.zoom(), pan: cy.pan() }
       cy.destroy()
       cyRef.current = null
     }
