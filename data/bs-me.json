@@ -2,6 +2,19 @@
   "curriculumId": "mechanical-engineering-bs",
   "name": "B.S. in Mechanical Engineering",
   "totalCredits": 0,
+  "tracks": [
+    { "general_education": "General Education" },
+    { "cae": "CAE" },
+    { "materials": "Materials" },
+    { "math": "Math" },
+    { "physics": "Physics" },
+    { "mechanics": "Mechanics" },
+    { "thermal_fluids": "Thermal and Fluids" },
+    { "electrical_instrumentation": "Electrical Instrumentation" },
+    { "data_analysis": "Data Analysis" },
+    { "professional_dev": "Professional Development" },
+    { "capstone": "Capstone" }
+  ],
   "semesters": [
     {
       "id": "y1-fall",
@@ -50,6 +63,7 @@
       "id": "CORE-1",
       "name": "CORE Elective (IA, IH, IS or D)",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-fall"
@@ -58,6 +72,7 @@
       "id": "EMEC-100",
       "name": "Intro to ME",
       "credits": 1,
+      "trackId": "professional_dev",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-fall"
@@ -66,6 +81,7 @@
       "id": "PHSX-220",
       "name": "Physics I",
       "credits": 4,
+      "trackId": "physics",
       "prerequisiteIds": [],
       "corequisiteIds": ["M-171Q"],
       "semesterId": "y1-fall"
@@ -74,6 +90,7 @@
       "id": "M-171Q",
       "name": "Calculus I",
       "credits": 4,
+      "trackId": "math",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-fall"
@@ -82,6 +99,7 @@
       "id": "US-CORE",
       "name": "US Core (US 101US or CLS 101US or COMX 111US)",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-fall"
@@ -90,6 +108,7 @@
       "id": "EMEC-103",
       "name": "CAE I",
       "credits": 2,
+      "trackId": "cae",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-fall"
@@ -98,6 +117,7 @@
       "id": "CORE-2",
       "name": "CORE Elective (IA, IH, IS or D)",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-spring"
@@ -106,6 +126,7 @@
       "id": "PHSX-222",
       "name": "Physics II",
       "credits": 4,
+      "trackId": "physics",
       "prerequisiteIds": ["PHSX-220"],
       "corequisiteIds": ["M-172"],
       "semesterId": "y1-spring"
@@ -114,6 +135,7 @@
       "id": "M-172",
       "name": "Calculus II",
       "credits": 4,
+      "trackId": "math",
       "prerequisiteIds": ["M-171Q"],
       "corequisiteIds": [],
       "semesterId": "y1-spring"
@@ -122,6 +144,7 @@
       "id": "CHMY-141+142",
       "name": "Chemistry I (CHMY 141 + 142)",
       "credits": 4,
+      "trackId": "materials",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-spring"
@@ -130,6 +153,7 @@
       "id": "WRIT-101W",
       "name": "WRIT 101W",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y1-spring"
@@ -138,6 +162,7 @@
       "id": "CORE-3",
       "name": "CORE Elective (IA, IH, IS or D)",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y2-fall"
@@ -146,6 +171,7 @@
       "id": "EGEN-201",
       "name": "Statics",
       "credits": 3,
+      "trackId": "mechanics",
       "prerequisiteIds": ["PHSX-220"],
       "corequisiteIds": ["M-273"],
       "semesterId": "y2-fall"
@@ -154,6 +180,7 @@
       "id": "M-273",
       "name": "Multivariable Calculus",
       "credits": 4,
+      "trackId": "math",
       "prerequisiteIds": ["M-172"],
       "corequisiteIds": [],
       "semesterId": "y2-fall"
@@ -162,6 +189,7 @@
       "id": "ETME-215",
       "name": "Manufact.",
       "credits": 3,
+      "trackId": "materials",
       "prerequisiteIds": ["CHMY-141+142"],
       "corequisiteIds": [],
       "semesterId": "y2-fall"
@@ -170,6 +198,7 @@
       "id": "ETME-216",
       "name": "Manufact. Lab",
       "credits": 1,
+      "trackId": "materials",
       "prerequisiteIds": [],
       "corequisiteIds": ["ETME-215"],
       "semesterId": "y2-fall"
@@ -178,6 +207,7 @@
       "id": "EMEC-203",
       "name": "CAE II",
       "credits": 2,
+      "trackId": "cae",
       "prerequisiteIds": ["EMEC-103"],
       "corequisiteIds": ["M-172"],
       "semesterId": "y2-fall"
@@ -186,6 +216,7 @@
       "id": "EGEN-205",
       "name": "Mech Mat",
       "credits": 3,
+      "trackId": "mechanics",
       "prerequisiteIds": ["EGEN-201"],
       "corequisiteIds": [],
       "semesterId": "y2-spring"
@@ -194,6 +225,7 @@
       "id": "EGEN-202",
       "name": "Dynamics",
       "credits": 3,
+      "trackId": "mechanics",
       "prerequisiteIds": ["EGEN-201", "M-273"],
       "corequisiteIds": [],
       "semesterId": "y2-spring"
@@ -202,6 +234,7 @@
       "id": "EELE-250",
       "name": "Circuits",
       "credits": 4,
+      "trackId": "electrical_instrumentation",
       "prerequisiteIds": ["PHSX-222", "M-172"],
       "corequisiteIds": [],
       "semesterId": "y2-spring"
@@ -210,6 +243,7 @@
       "id": "EGEN-350",
       "name": "Appl Data Analysis",
       "credits": 2,
+      "trackId": "data_analysis",
       "prerequisiteIds": ["M-172"],
       "corequisiteIds": [],
       "semesterId": "y2-spring"
@@ -218,6 +252,7 @@
       "id": "M-274",
       "name": "Diff. Equations",
       "credits": 4,
+      "trackId": "math",
       "prerequisiteIds": ["M-172"],
       "corequisiteIds": [],
       "semesterId": "y2-spring"
@@ -226,6 +261,7 @@
       "id": "EMEC-341",
       "name": "Adv. Mechanics",
       "credits": 3,
+      "trackId": "mechanics",
       "prerequisiteIds": ["EGEN-205", "M-274"],
       "corequisiteIds": ["ETME-216", "EGEN-350"],
       "semesterId": "y3-fall"
@@ -234,6 +270,7 @@
       "id": "EMEC-250",
       "name": "Materials",
       "credits": 3,
+      "trackId": "materials",
       "prerequisiteIds": ["CHMY-141+142"],
       "corequisiteIds": ["M-172"],
       "semesterId": "y3-fall"
@@ -242,6 +279,7 @@
       "id": "EMAT-252",
       "name": "Materials Lab",
       "credits": 1,
+      "trackId": "materials",
       "prerequisiteIds": ["WRIT-101W"],
       "corequisiteIds": ["EMEC-250"],
       "semesterId": "y3-fall"
@@ -250,6 +288,7 @@
       "id": "EMEC-320",
       "name": "Thermo I",
       "credits": 3,
+      "trackId": "thermal_fluids",
       "prerequisiteIds": ["EGEN-201"],
       "corequisiteIds": [],
       "semesterId": "y3-fall"
@@ -258,6 +297,7 @@
       "id": "EGEN-335",
       "name": "Fluids",
       "credits": 3,
+      "trackId": "thermal_fluids",
       "prerequisiteIds": ["EGEN-205"],
       "corequisiteIds": [],
       "semesterId": "y3-fall"
@@ -266,6 +306,7 @@
       "id": "EMEC-303",
       "name": "CAE III",
       "credits": 3,
+      "trackId": "cae",
       "prerequisiteIds": ["M-273", "EMEC-203"],
       "corequisiteIds": ["EGEN-205"],
       "semesterId": "y3-fall"
@@ -274,6 +315,7 @@
       "id": "EMEC-342",
       "name": "Mech. Design",
       "credits": 3,
+      "trackId": "cae",
       "prerequisiteIds": ["EMEC-341"],
       "corequisiteIds": [],
       "semesterId": "y3-spring"
@@ -282,6 +324,7 @@
       "id": "EGEN-310R",
       "name": "Multi Discpl Design",
       "credits": 3,
+      "trackId": "cae",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y3-spring"
@@ -290,6 +333,7 @@
       "id": "EMEC-360",
       "name": "Meas. & Instr.",
       "credits": 3,
+      "trackId": "electrical_instrumentation",
       "prerequisiteIds": ["EELE-250"],
       "corequisiteIds": ["EGEN-350", "EMEC-320", "EMEC-303"],
       "semesterId": "y3-spring"
@@ -298,6 +342,7 @@
       "id": "EMEC-361",
       "name": "Meas. Lab",
       "credits": 1,
+      "trackId": "electrical_instrumentation",
       "prerequisiteIds": [],
       "corequisiteIds": ["EMEC-360"],
       "semesterId": "y3-spring"
@@ -306,6 +351,7 @@
       "id": "EMEC-321",
       "name": "Thermo II",
       "credits": 3,
+      "trackId": "thermal_fluids",
       "prerequisiteIds": ["EMEC-320"],
       "corequisiteIds": [],
       "semesterId": "y3-spring"
@@ -314,6 +360,7 @@
       "id": "EMEC-326",
       "name": "Heat Transfer",
       "credits": 3,
+      "trackId": "thermal_fluids",
       "prerequisiteIds": ["EMEC-320", "EGEN-335"],
       "corequisiteIds": ["EMEC-303"],
       "semesterId": "y3-spring"
@@ -322,6 +369,7 @@
       "id": "PROF-ELECTIVE-1",
       "name": "Professional Elective",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-fall"
@@ -330,6 +378,7 @@
       "id": "PROF-ELECTIVE-2",
       "name": "Professional Elective",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-fall"
@@ -338,6 +387,7 @@
       "id": "EMEC-489R",
       "name": "Capstone I",
       "credits": 2,
+      "trackId": "capstone",
       "prerequisiteIds": [],
       "corequisiteIds": ["EMEC-360", "EMEC-361", "EMEC-321", "EMEC-326"],
       "semesterId": "y4-fall"
@@ -346,6 +396,7 @@
       "id": "EMEC-445",
       "name": "Vibrations",
       "credits": 3,
+      "trackId": "mechanics",
       "prerequisiteIds": ["EMEC-303"],
       "corequisiteIds": [],
       "semesterId": "y4-fall"
@@ -354,6 +405,7 @@
       "id": "EGEN-330",
       "name": "Business Fund.",
       "credits": 3,
+      "trackId": "professional_dev",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-fall"
@@ -362,6 +414,7 @@
       "id": "EGEN-488",
       "name": "Fundamentals of Engineering Exam",
       "credits": 0,
+      "trackId": "professional_dev",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-fall"
@@ -370,6 +423,7 @@
       "id": "CORE-4",
       "name": "CORE Elective (IA, IH, IS or D)",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-fall"
@@ -378,6 +432,7 @@
       "id": "PROF-ELECTIVE-3",
       "name": "Professional Elective",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-spring"
@@ -386,6 +441,7 @@
       "id": "PROF-ELECTIVE-4",
       "name": "Professional Elective",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-spring"
@@ -394,6 +450,7 @@
       "id": "EMEC-499R",
       "name": "Capstone II",
       "credits": 2,
+      "trackId": "capstone",
       "prerequisiteIds": ["EMEC-489R"],
       "corequisiteIds": [],
       "semesterId": "y4-spring"
@@ -402,6 +459,7 @@
       "id": "EMEC-405+ | EMEC-436++",
       "name": "EMEC 405 or Approved EMEC 4xx",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-spring"
@@ -410,6 +468,7 @@
       "id": "CORE-5",
       "name": "CORE Elective (IA, IH, IS or D)",
       "credits": 3,
+      "trackId": "general_education",
       "prerequisiteIds": [],
       "corequisiteIds": [],
       "semesterId": "y4-spring"
