@@ -48,20 +48,25 @@ export function CurriculumApp() {
     target: HTMLInputElement
   }
 
+  const loadCurriculumFromJsonText = (jsonText: string, sourceDescription: string) => {
+    try {
+      const json = JSON.parse(jsonText)
+      setCurriculum(json)
+      setMovedCourseIds([])
+      setStatus(`Loaded ${sourceDescription}.`)
+    } catch (err) {
+      console.error(err)
+      setStatus(`Failed to parse ${sourceDescription} as JSON`, true)
+    }
+  }
+
   const handleFileChange = (event: InputChangeEvent) => {
     const input = event.target
     if (!input.files || input.files.length === 0) return
     const file = input.files[0]
     const reader = new FileReader()
     reader.onload = () => {
-      try {
-        const json = JSON.parse(String(reader.result))
-        setCurriculum(json)
-        setMovedCourseIds([])
-      } catch (err) {
-        console.error(err)
-        setStatus('Failed to parse selected file as JSON', true)
-      }
+      loadCurriculumFromJsonText(String(reader.result), file.name)
     }
     reader.readAsText(file)
   }
@@ -73,12 +78,9 @@ export function CurriculumApp() {
         if (!response.ok) {
           throw new Error(`Failed to load ${relativePath}: ${response.status}`)
         }
-        return response.json()
+        return response.text()
       })
-      .then((json: Curriculum) => {
-        setCurriculum(json)
-        setMovedCourseIds([])
-      })
+      .then((text) => loadCurriculumFromJsonText(text, relativePath))
       .catch((err) => {
         console.error('Failed to load curriculum from', relativePath, err)
         setStatus(`Failed to load ${relativePath}`, true)
@@ -118,6 +120,11 @@ export function CurriculumApp() {
     }
   }, [curriculum, setStatus])
 
+  const handleCloseDialog = useCallback(() => {
+    setTrackDialogOpen(false)
+    ;(document.querySelector('button.help-button') as HTMLButtonElement)?.focus()
+  }, [])
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' || event.key === 'Esc') {
@@ -139,72 +146,65 @@ export function CurriculumApp() {
           <h1>Curriculum Visualizer</h1>
         </div>
         <div className="controls">
-          <label htmlFor="file-input">Load curriculum JSON:</label>
-          <input
-            id="file-input"
-            type="file"
-            accept="application/json,.json"
-            onChange={handleFileChange}
-          />
-          <button
-            className="secondary"
-            type="button"
-            onClick={() => setTrackDialogOpen((prev) => !prev)}
-            aria-expanded={trackDialogOpen}
-            aria-controls="track-dialog"
-          >
-            Track legend
-          </button>
-          <button
-            className="secondary"
-            type="button"
-            onClick={() => loadCurriculumFromPath('sample.json')}
-          >
-            Load sample.json
-          </button>
-          <button
-            className="secondary"
-            type="button"
-            onClick={() => loadCurriculumFromPath('bs-me.json')}
-          >
-            Load bs-me.json
-          </button>
-          <button
-            className="secondary"
-            type="button"
-            onClick={handleSave}
-            disabled={movedCourseIds.length === 0}
-            style={{
-              cursor: movedCourseIds.length === 0 ? 'not-allowed' : 'pointer',
-            }}
-          >
-            Save JSON
-          </button>
+          <div className="file-controls">
+            <span>Load curriculum JSON:</span>
+            <input
+              id="file-input"
+              className="file-input"
+              type="file"
+              accept="application/json,.json"
+              onChange={handleFileChange}
+            />
+            <label
+              htmlFor="file-input"
+              className="file-input-button"
+              title="Load a curriculum JSON file"
+            >
+              Choose File
+            </label>
+            <span className={`status-text${statusError ? ' error' : ''}`}>{status}</span>
 
-          <button type="button" onClick={zoomOut}>
-            -
-          </button>
-          <button type="button" onClick={zoomIn}>
-            +
-          </button>
-          <span className={`status-text${statusError ? ' error' : ''}`}>{status}</span>
-        </div>
-        <div className="legend">
-          <span className="legend-item">
-            <span className="legend-line" />
-            Prerequisite
-          </span>
-          <span className="legend-item">
-            <span className="legend-line coreq" />
-            Corequisite
-          </span>
-        </div>
+            <button
+              type="button"
+              onClick={() => loadCurriculumFromPath('bs-me.json')}
+              title="Load sample curriculum"
+            >
+              Load BSME
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={movedCourseIds.length === 0}
+              style={{
+                cursor: movedCourseIds.length === 0 ? 'not-allowed' : 'pointer',
+              }}
+              title="Save curriculum"
+            >
+              Save
+            </button>
+          </div>
 
-        <TrackDialog
-          curriculum={curriculum}
-          open={trackDialogOpen}
-          onClose={() => setTrackDialogOpen(false)}
-        />
+          <div className="zoom-controls">
+            <button type="button" className="secondary" onClick={zoomOut} title="Zoom out">
+              -
+            </button>
+            <button type="button" className="secondary" onClick={zoomIn} title="Zoom in">
+              +
+            </button>
+            <button
+              className="help-button"
+              type="button"
+              onClick={() => setTrackDialogOpen((prev) => !prev)}
+              aria-expanded={trackDialogOpen}
+              aria-controls="track-dialog"
+              aria-label="Help"
+              title="Help"
+            >
+              ?
+            </button>
+          </div>
+        </div>
+        <TrackDialog curriculum={curriculum} open={trackDialogOpen} onClose={handleCloseDialog} />
       </div>
       <div className="graph-container" ref={containerRef}>
         {curriculum && (
