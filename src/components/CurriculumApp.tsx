@@ -8,6 +8,7 @@ export function CurriculumApp() {
   const [status, setStatusState] = useState<string>('No file loaded.')
   const [statusError, setStatusError] = useState<boolean>(false)
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null)
+  const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
   const [zoom, setZoom] = useState<number>(1)
   const [movedCourseIds, setMovedCourseIds] = useState<string[]>([])
   const [trackDialogOpen, setTrackDialogOpen] = useState<boolean>(false)
@@ -53,6 +54,7 @@ export function CurriculumApp() {
       const json = JSON.parse(jsonText)
       setCurriculum(json)
       setMovedCourseIds([])
+      setLoadedFileName(sourceDescription)
       setStatus(`Loaded ${sourceDescription}.`)
     } catch (err) {
       console.error(err)
@@ -102,13 +104,26 @@ export function CurriculumApp() {
     }
 
     try {
+      const defaultFileName =
+        loadedFileName ?? `${curriculum.curriculumId || curriculum.name || 'curriculum'}.json`
+      const requestedName = window.prompt('Save curriculum as:', defaultFileName)
+      if (requestedName == null) {
+        setStatus('Save canceled.')
+        return
+      }
+
+      const trimmed = requestedName.trim()
+      const baseName = trimmed.length === 0 ? defaultFileName : trimmed
+      const withoutIllegalChars = baseName.replace(/[/\\?%*:|"<>]/g, '-')
+      const hasJsonExtension = withoutIllegalChars.toLowerCase().endsWith('.json')
+      const fileName = hasJsonExtension ? withoutIllegalChars : `${withoutIllegalChars}.json`
+
       const jsonString = JSON.stringify(curriculum, null, 2)
       const blob = new Blob([jsonString], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
-      const fileNameBase = curriculum.curriculumId || curriculum.name || 'curriculum'
       link.href = url
-      link.download = `${fileNameBase}-updated.json`
+      link.download = fileName
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -118,7 +133,7 @@ export function CurriculumApp() {
       console.error('Failed to save curriculum', err)
       setStatus('Failed to save curriculum JSON.', true)
     }
-  }, [curriculum, setStatus])
+  }, [curriculum, loadedFileName, setStatus])
 
   const handleCloseDialog = useCallback(() => {
     setTrackDialogOpen(false)
