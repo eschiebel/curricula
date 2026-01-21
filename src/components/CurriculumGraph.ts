@@ -45,6 +45,8 @@ export interface RenderOptions {
   onCourseSelect: (courseId: string) => void
   onCourseMoveBySemester?: (courseId: string, direction: 'previous' | 'next') => void
   focusedSemesterId?: string | null
+  onRegisterResetViewport?: (reset: (() => void) | null) => void
+  onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
 }
 
 export interface CurriculumGraphProps extends RenderOptions {
@@ -206,14 +208,62 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     onCourseSelect,
     onCourseMoveBySemester,
     focusedSemesterId,
+    onRegisterResetViewport,
+    onRegisterPanBy,
   } = props
   const containerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<Core | null>(null)
   const viewportRef = useRef<{ zoom: number; pan: { x: number; y: number } } | null>(null)
+  const defaultViewportRef = useRef<{ zoom: number; pan: { x: number; y: number } } | null>(null)
+  const defaultViewportKeyRef = useRef<string | null>(null)
+
+  const clonePan = (pan: { x: number; y: number }) => ({ x: pan.x, y: pan.y })
+
+  useEffect(() => {
+    if (!onRegisterResetViewport) return
+
+    onRegisterResetViewport(() => {
+      const cy = cyRef.current
+      const defaultViewport = defaultViewportRef.current
+      if (!cy || !defaultViewport) return
+
+      cy.batch(() => {
+        cy.zoom(defaultViewport.zoom)
+        cy.pan(clonePan(defaultViewport.pan))
+      })
+    })
+
+    return () => {
+      onRegisterResetViewport(null)
+    }
+  }, [onRegisterResetViewport])
+
+  useEffect(() => {
+    if (!onRegisterPanBy) return
+
+    onRegisterPanBy((dx: number, dy: number) => {
+      const cy = cyRef.current
+      if (!cy) return
+
+      const pan = cy.pan()
+      cy.pan({ x: pan.x + dx, y: pan.y + dy })
+    })
+
+    return () => {
+      onRegisterPanBy(null)
+    }
+  }, [onRegisterPanBy])
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
+
+    const defaultKey = curriculum.curriculumId || curriculum.name
+    if (defaultViewportKeyRef.current !== defaultKey) {
+      defaultViewportKeyRef.current = defaultKey
+      defaultViewportRef.current = null
+      viewportRef.current = null
+    }
 
     setStatus(`Loaded: ${curriculum.name}`)
 
@@ -437,7 +487,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           style: {
             width: 2,
             'line-color': '#2c3e50',
-            'curve-style': 'segments',
+            'curve-style': 'straight',
             'segment-distances': 40,
             'segment-weights': 0.5,
             'target-arrow-color': '#2c3e50',
@@ -449,11 +499,11 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           selector: 'edge[type = "coreq"]',
           style: {
             'line-style': 'dashed',
-            'line-color': '#8e44ad',
-            'curve-style': 'segments',
+            'line-color': '#2c3e50',
+            'curve-style': 'straight',
             'segment-distances': 40,
             'segment-weights': 0.5,
-            'target-arrow-color': '#8e44ad',
+            'target-arrow-color': '#2c3e50',
             'target-arrow-shape': 'triangle',
           },
         },
@@ -475,7 +525,12 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
 
     if (viewportRef.current) {
       cy.zoom(viewportRef.current.zoom)
-      cy.pan(viewportRef.current.pan)
+      cy.pan(clonePan(viewportRef.current.pan))
+    }
+
+    if (!defaultViewportRef.current) {
+      const pan = cy.pan()
+      defaultViewportRef.current = { zoom: cy.zoom(), pan: clonePan(pan) }
     }
 
     if (onCourseMoved) {
@@ -537,7 +592,8 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     }
 
     return () => {
-      viewportRef.current = { zoom: cy.zoom(), pan: cy.pan() }
+      const pan = cy.pan()
+      viewportRef.current = { zoom: cy.zoom(), pan: clonePan(pan) }
       cy.destroy()
       cyRef.current = null
     }

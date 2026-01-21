@@ -9,10 +9,19 @@ export interface CurriculumViewProps {
   setStatus: StatusSetter
   movedCourseIds?: string[]
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
+  onRegisterResetViewport?: (reset: (() => void) | null) => void
+  onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
 }
 
 export function CurriculumView(props: CurriculumViewProps) {
-  const { curriculum, setStatus, movedCourseIds, onCourseMoved } = props
+  const {
+    curriculum,
+    setStatus,
+    movedCourseIds,
+    onCourseMoved,
+    onRegisterResetViewport,
+    onRegisterPanBy,
+  } = props
 
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [focusedSemesterId, setFocusedSemesterId] = useState<string | null>(null)
@@ -73,6 +82,8 @@ export function CurriculumView(props: CurriculumViewProps) {
         onCourseSelect={setSelectedCourseId}
         onCourseMoveBySemester={handleCourseMoveBySemester}
         focusedSemesterId={focusedSemesterId}
+        onRegisterResetViewport={onRegisterResetViewport}
+        onRegisterPanBy={onRegisterPanBy}
       />
       <CurriculumList
         curriculum={curriculum}

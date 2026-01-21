@@ -1,19 +1,43 @@
 import { fireEvent, render, waitFor } from '@testing-library/preact'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const curriculumViewMocks = vi.hoisted(() => {
+  return {
+    panBy: vi.fn<(dx: number, dy: number) => void>(),
+    resetViewport: vi.fn<() => void>(),
+  }
+})
 
 vi.mock('../components/CurriculumView', () => {
   return {
+    __mocks: curriculumViewMocks,
     CurriculumView: (props: {
       onCourseMoved?: (courseId: string, newSemesterId: string) => void
+      onRegisterResetViewport?: (reset: (() => void) | null) => void
+      onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
     }) => (
-      <button type="button" onClick={() => props.onCourseMoved?.('C1', 's1')}>
-        Simulate move
-      </button>
+      <div>
+        <button
+          type="button"
+          onClick={() => {
+            props.onRegisterResetViewport?.(curriculumViewMocks.resetViewport)
+            props.onRegisterPanBy?.(curriculumViewMocks.panBy)
+            props.onCourseMoved?.('C1', 's1')
+          }}
+        >
+          Simulate move
+        </button>
+      </div>
     ),
   }
 })
 
 describe('CurriculumApp', () => {
+  beforeEach(() => {
+    curriculumViewMocks.panBy.mockClear()
+    curriculumViewMocks.resetViewport.mockClear()
+  })
+
   function buildCurriculumJson() {
     return JSON.stringify({
       curriculumId: 'mechanical-engineering-bs',
@@ -262,5 +286,62 @@ describe('CurriculumApp', () => {
       expect(queryByRole('dialog', { name: 'Help' })).toBeNull()
       expect(document.activeElement).toBe(helpButton)
     })
+  })
+
+  it('wires pan controls to CurriculumView onRegisterPanBy', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(buildCurriculumJson(), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const { CurriculumApp } = await import('../components/CurriculumApp')
+    const { getByRole, getByText } = render(<CurriculumApp />)
+
+    fireEvent.click(getByRole('button', { name: 'Load BSME' }))
+    await waitFor(() => {
+      expect(getByText('Loaded bs-me.json.')).toBeInTheDocument()
+    })
+
+    fireEvent.click(getByRole('button', { name: 'Simulate move' }))
+
+    fireEvent.click(getByRole('button', { name: 'Pan up' }))
+    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(0, 80)
+
+    fireEvent.click(getByRole('button', { name: 'Pan left' }))
+    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(80, 0)
+
+    fireEvent.click(getByRole('button', { name: 'Pan right' }))
+    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(-80, 0)
+
+    fireEvent.click(getByRole('button', { name: 'Pan down' }))
+    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(0, -80)
+
+    fetchSpy.mockRestore()
+  })
+
+  it('wires Reset button to CurriculumView onRegisterResetViewport', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(buildCurriculumJson(), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const { CurriculumApp } = await import('../components/CurriculumApp')
+    const { getByRole, getByText } = render(<CurriculumApp />)
+
+    fireEvent.click(getByRole('button', { name: 'Load BSME' }))
+    await waitFor(() => {
+      expect(getByText('Loaded bs-me.json.')).toBeInTheDocument()
+    })
+
+    fireEvent.click(getByRole('button', { name: 'Simulate move' }))
+    fireEvent.click(getByRole('button', { name: 'Reset' }))
+
+    expect(curriculumViewMocks.resetViewport).toHaveBeenCalledTimes(1)
+
+    fetchSpy.mockRestore()
   })
 })

@@ -51,8 +51,9 @@ describe('TrackDialog', () => {
     )
 
     expect(getByRole('dialog', { name: 'Help' })).toBeInTheDocument()
-    expect(getByText('General info')).toBeInTheDocument()
-    expect(getByText('Track legend')).toBeInTheDocument()
+    expect(getByText('General')).toBeInTheDocument()
+    expect(getByText('Curriculum')).toBeInTheDocument()
+    expect(getByText('Tracks')).toBeInTheDocument()
   })
 
   it('calls onClose when clicking the close button', () => {
@@ -64,33 +65,47 @@ describe('TrackDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it('defaults to the General info tab and can switch to Track legend tab', () => {
+  it('defaults to the General tab and can switch between tabs', () => {
     const { container, getByText } = render(
       <TrackDialog curriculum={null} open={true} onClose={() => {}} />,
     )
 
     const infoRadio = container.querySelector('#track-dialog-tab-info') as HTMLInputElement | null
-    const legendRadio = container.querySelector(
-      '#track-dialog-tab-legend',
+    const curriculumLegendRadio = container.querySelector(
+      '#track-dialog-tab-curriculum-legend',
+    ) as HTMLInputElement | null
+    const trackLegendRadio = container.querySelector(
+      '#track-dialog-tab-track-legend',
     ) as HTMLInputElement | null
 
     expect(infoRadio).not.toBeNull()
-    expect(legendRadio).not.toBeNull()
+    expect(curriculumLegendRadio).not.toBeNull()
+    expect(trackLegendRadio).not.toBeNull()
 
     expect(infoRadio?.checked).toBe(true)
-    expect(legendRadio?.checked).toBe(false)
+    expect(curriculumLegendRadio?.checked).toBe(false)
+    expect(trackLegendRadio?.checked).toBe(false)
 
-    fireEvent.click(getByText('Track legend'))
+    fireEvent.click(getByText('Curriculum'))
     expect(infoRadio?.checked).toBe(false)
-    expect(legendRadio?.checked).toBe(true)
+    expect(curriculumLegendRadio?.checked).toBe(true)
+    expect(trackLegendRadio?.checked).toBe(false)
 
-    fireEvent.click(getByText('General info'))
+    fireEvent.click(getByText('Tracks'))
+    expect(infoRadio?.checked).toBe(false)
+    expect(curriculumLegendRadio?.checked).toBe(false)
+    expect(trackLegendRadio?.checked).toBe(true)
+
+    fireEvent.click(getByText('General'))
     expect(infoRadio?.checked).toBe(true)
-    expect(legendRadio?.checked).toBe(false)
+    expect(curriculumLegendRadio?.checked).toBe(false)
+    expect(trackLegendRadio?.checked).toBe(false)
   })
 
   it('shows the track legend empty state when curriculum is null', () => {
     const { getByText } = render(<TrackDialog curriculum={null} open={true} onClose={() => {}} />)
+
+    fireEvent.click(getByText('Tracks'))
 
     getByText('Load a curriculum to see tracks.')
   })
@@ -101,6 +116,8 @@ describe('TrackDialog', () => {
     const { getByText } = render(
       <TrackDialog curriculum={curriculum} open={true} onClose={() => {}} />,
     )
+
+    fireEvent.click(getByText('Tracks'))
 
     getByText('Track One')
     getByText('Track Two')

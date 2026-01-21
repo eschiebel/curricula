@@ -5,6 +5,8 @@ import { TrackDialog } from './TrackDialog'
 
 export function CurriculumApp() {
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const resetViewportRef = useRef<(() => void) | null>(null)
+  const panByRef = useRef<((dx: number, dy: number) => void) | null>(null)
   const [status, setStatusState] = useState<string>('No file loaded.')
   const [statusError, setStatusError] = useState<boolean>(false)
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null)
@@ -96,6 +98,21 @@ export function CurriculumApp() {
   const zoomOut = useCallback(() => {
     setZoom((z) => Math.max(0.2, z - 0.1))
   }, [])
+
+  const resetZoom = useCallback(() => {
+    setZoom(1)
+    resetViewportRef.current?.()
+  }, [])
+
+  const handleRegisterResetViewport = useCallback((reset: (() => void) | null) => {
+    resetViewportRef.current = reset
+  }, [])
+
+  const handleRegisterPanBy = useCallback((panBy: ((dx: number, dy: number) => void) | null) => {
+    panByRef.current = panBy
+  }, [])
+
+  const panStep = 80
 
   const handleSave = useCallback(() => {
     if (!curriculum) {
@@ -199,13 +216,56 @@ export function CurriculumApp() {
             </button>
           </div>
 
-          <div className="zoom-controls">
-            <button type="button" className="secondary" onClick={zoomOut} title="Zoom out">
-              -
-            </button>
-            <button type="button" className="secondary" onClick={zoomIn} title="Zoom in">
-              +
-            </button>
+          <div className="zoom-and-pan-controls">
+            <fieldset className="pan-controls" aria-label="Pan view">
+              <button
+                type="button"
+                className="secondary pan-button pan-up"
+                onClick={() => panByRef.current?.(0, panStep)}
+                title="Pan up"
+                aria-label="Pan up"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                className="secondary pan-button pan-left"
+                onClick={() => panByRef.current?.(panStep, 0)}
+                title="Pan left"
+                aria-label="Pan left"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="secondary pan-button pan-right"
+                onClick={() => panByRef.current?.(-panStep, 0)}
+                title="Pan right"
+                aria-label="Pan right"
+              >
+                →
+              </button>
+              <button
+                type="button"
+                className="secondary pan-button pan-down"
+                onClick={() => panByRef.current?.(0, -panStep)}
+                title="Pan down"
+                aria-label="Pan down"
+              >
+                ↓
+              </button>
+            </fieldset>
+            <fieldset className="zoom-controls">
+              <button type="button" className="secondary" onClick={zoomOut} title="Zoom out">
+                -
+              </button>
+              <button type="button" className="secondary" onClick={zoomIn} title="Zoom in">
+                +
+              </button>
+              <button type="button" className="secondary" onClick={resetZoom} title="Reset zoom">
+                Reset
+              </button>
+            </fieldset>
             <button
               className="help-button"
               type="button"
@@ -228,6 +288,8 @@ export function CurriculumApp() {
             setStatus={setStatus}
             movedCourseIds={movedCourseIds}
             onCourseMoved={handleCourseMoved}
+            onRegisterResetViewport={handleRegisterResetViewport}
+            onRegisterPanBy={handleRegisterPanBy}
           />
         )}
       </div>
