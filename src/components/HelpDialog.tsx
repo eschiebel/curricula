@@ -1,6 +1,10 @@
-import { useMemo } from 'preact/hooks'
+import type { JSX } from 'preact'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Curriculum } from './CurriculumGraph'
 import { getCurriculumTrackInfo, getTrackColor } from './CurriculumGraph'
+
+const tabOrder = ['info', 'legend', 'tracks', 'a11y'] as const
+type TabId = (typeof tabOrder)[number]
 
 export interface HelpDialogProps {
   curriculum: Curriculum | null
@@ -11,10 +15,55 @@ export interface HelpDialogProps {
 export function HelpDialog(props: HelpDialogProps) {
   const { curriculum, open, onClose } = props
 
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  const [activeTab, setActiveTab] = useState<TabId>('info')
+
+  const tabButtonRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    info: null,
+    legend: null,
+    tracks: null,
+    a11y: null,
+  })
+
   const trackInfo = useMemo(() => {
     if (!curriculum) return null
     return getCurriculumTrackInfo(curriculum)
   }, [curriculum])
+
+  useEffect(() => {
+    if (!open) return
+    closeButtonRef.current?.focus()
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    setActiveTab('info')
+  }, [open])
+
+  const focusAndActivateTab = useCallback((tabId: TabId) => {
+    tabButtonRefs.current[tabId]?.focus()
+    setActiveTab(tabId)
+  }, [])
+
+  const onTabKeyDown = useCallback(
+    (currentTab: TabId) => (event: JSX.TargetedKeyboardEvent<HTMLButtonElement>) => {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        const index = tabOrder.indexOf(currentTab)
+        const nextTab = tabOrder[(index + 1) % tabOrder.length]
+        focusAndActivateTab(nextTab)
+      }
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        const index = tabOrder.indexOf(currentTab)
+        const nextTab = tabOrder[(index - 1 + tabOrder.length) % tabOrder.length]
+        focusAndActivateTab(nextTab)
+      }
+    },
+    [focusAndActivateTab],
+  )
 
   if (!open) return null
 
@@ -43,31 +92,74 @@ export function HelpDialog(props: HelpDialogProps) {
       <div className="legend">
         <div className="nodes">
           <span className="legend-item">
-            <span className="legend-node" />
+            <span className="legend-node">box with a solid border</span>
             Course
           </span>
           <span className="legend-item">
-            <span className="legend-node moved" />
+            <span className="legend-node moved">box with a dashed border</span>
             Course has been moved
           </span>
           <span className="legend-item">
-            <span className="legend-node selected" />
+            <span className="legend-node selected">box with a thick orange border</span>
             Course is selected
           </span>
           <span className="legend-item">
-            <span className="legend-node violation" />
+            <span className="legend-node violation">
+              box with a thick red border and a crosshatched background
+            </span>
             Course violates pre or corequisites
           </span>
         </div>
 
         <div className="edges">
           <span className="legend-item">
-            <span className="legend-line" />
+            <svg
+              width="33"
+              height="6.6"
+              viewBox="0 0 100 20"
+              xmlns="http://www.w3.org/2000/svg"
+              stroke="#2c3e50"
+              fill="#2c3e50"
+              strokeWidth="3"
+            >
+              <title>arrow with solid line</title>
+              <line x1="0" y1="10" x2="90" y2="10" />
+              <polygon points="90,5 100,10 90,15" />
+            </svg>
             Prerequisite
           </span>
           <span className="legend-item">
-            <span className="legend-line coreq" />
+            <svg
+              width="33"
+              height="6.6"
+              viewBox="0 0 100 20"
+              xmlns="http://www.w3.org/2000/svg"
+              stroke="#2c3e50"
+              fill="#2c3e50"
+              strokeWidth="3"
+            >
+              <title>arrow with dotted line</title>
+              <line x1="0" y1="10" x2="90" y2="10" strokeDasharray="4,4" />
+              <polygon points="90,5 100,10 90,15" />
+            </svg>
             Corequisite
+          </span>
+          <span className="legend-item">
+            <svg
+              width="33"
+              height="6.6"
+              viewBox="0 0 100 20"
+              xmlns="http://www.w3.org/2000/svg"
+              stroke="#c0392b"
+              fill="#c0392b"
+              strokeWidth="3"
+            >
+              <title>red arrow with tick mark</title>
+              <line x1="0" y1="10" x2="90" y2="10" />
+              <polygon points="90,5 100,10 90,15" />
+              <line x1="80" y1="5" x2="80" y2="15" />
+            </svg>
+            Violation
           </span>
         </div>
       </div>
@@ -112,32 +204,126 @@ export function HelpDialog(props: HelpDialogProps) {
     <div id="help-dialog" className="help-dialog" role="dialog" aria-label="Help">
       <div className="help-dialog-header">
         <h2 className="help-dialog-title">Help</h2>
-        <button type="button" className="close-button" onClick={onClose} aria-label="Close">
+        <button
+          ref={closeButtonRef}
+          type="button"
+          className="close-button"
+          onClick={onClose}
+          aria-label="Close"
+        >
           X
         </button>
       </div>
 
-      <div className="help-dialog-tabs">
-        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-info" defaultChecked />
-        <label htmlFor="help-dialog-tab-info">General</label>
+      <div className="help-dialog-tabs" role="tablist" aria-label="Help">
+        <button
+          ref={(el) => {
+            tabButtonRefs.current.info = el
+          }}
+          type="button"
+          id="help-dialog-tab-info"
+          role="tab"
+          aria-selected={activeTab === 'info'}
+          aria-controls="help-dialog-panel-info"
+          tabIndex={activeTab === 'info' ? 0 : -1}
+          onKeyDown={onTabKeyDown('info')}
+          onClick={() => focusAndActivateTab('info')}
+        >
+          General
+        </button>
 
-        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-curriculum-legend" />
-        <label htmlFor="help-dialog-tab-curriculum-legend">Legend</label>
+        <button
+          ref={(el) => {
+            tabButtonRefs.current.legend = el
+          }}
+          type="button"
+          id="help-dialog-tab-legend"
+          role="tab"
+          aria-selected={activeTab === 'legend'}
+          aria-controls="help-dialog-panel-legend"
+          tabIndex={activeTab === 'legend' ? 0 : -1}
+          onKeyDown={onTabKeyDown('legend')}
+          onClick={() => focusAndActivateTab('legend')}
+        >
+          Legend
+        </button>
 
-        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-track-legend" />
-        <label htmlFor="help-dialog-tab-track-legend">Tracks</label>
+        <button
+          ref={(el) => {
+            tabButtonRefs.current.tracks = el
+          }}
+          type="button"
+          id="help-dialog-tab-tracks"
+          role="tab"
+          aria-selected={activeTab === 'tracks'}
+          aria-controls="help-dialog-panel-tracks"
+          tabIndex={activeTab === 'tracks' ? 0 : -1}
+          onKeyDown={onTabKeyDown('tracks')}
+          onClick={() => focusAndActivateTab('tracks')}
+        >
+          Tracks
+        </button>
 
-        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-a11y" />
-        <label htmlFor="help-dialog-tab-a11y">Accessibility</label>
+        <button
+          ref={(el) => {
+            tabButtonRefs.current.a11y = el
+          }}
+          type="button"
+          id="help-dialog-tab-a11y"
+          role="tab"
+          aria-selected={activeTab === 'a11y'}
+          aria-controls="help-dialog-panel-a11y"
+          tabIndex={activeTab === 'a11y' ? 0 : -1}
+          onKeyDown={onTabKeyDown('a11y')}
+          onClick={() => focusAndActivateTab('a11y')}
+        >
+          Accessibility
+        </button>
 
         <div className="help-dialog-tab-panels">
-          <section className="help-dialog-panel">{renderGeneralInfo()}</section>
+          <section
+            id="help-dialog-panel-info"
+            className="help-dialog-panel"
+            role="tabpanel"
+            tabIndex={activeTab === 'info' ? 0 : -1}
+            aria-labelledby="help-dialog-tab-info"
+            aria-hidden={activeTab !== 'info'}
+          >
+            {renderGeneralInfo()}
+          </section>
 
-          <section className="help-dialog-panel">{renderCurriculumLegend()}</section>
+          <section
+            id="help-dialog-panel-legend"
+            className="help-dialog-panel"
+            role="tabpanel"
+            tabIndex={activeTab === 'legend' ? 0 : -1}
+            aria-labelledby="help-dialog-tab-legend"
+            aria-hidden={activeTab !== 'legend'}
+          >
+            {renderCurriculumLegend()}
+          </section>
 
-          <section className="help-dialog-panel">{renderTrackLegend()}</section>
+          <section
+            id="help-dialog-panel-tracks"
+            className="help-dialog-panel"
+            role="tabpanel"
+            tabIndex={activeTab === 'tracks' ? 0 : -1}
+            aria-labelledby="help-dialog-tab-tracks"
+            aria-hidden={activeTab !== 'tracks'}
+          >
+            {renderTrackLegend()}
+          </section>
 
-          <section className="help-dialog-panel">{renderA11yHelp()}</section>
+          <section
+            id="help-dialog-panel-a11y"
+            className="help-dialog-panel"
+            role="tabpanel"
+            tabIndex={activeTab === 'a11y' ? 0 : -1}
+            aria-labelledby="help-dialog-tab-a11y"
+            aria-hidden={activeTab !== 'a11y'}
+          >
+            {renderA11yHelp()}
+          </section>
         </div>
       </div>
     </div>

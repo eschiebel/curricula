@@ -534,6 +534,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
             width: 4,
             'line-color': '#c0392b',
             'target-arrow-color': '#c0392b',
+            'target-arrow-shape': 'triangle-tee',
           },
         },
       ],

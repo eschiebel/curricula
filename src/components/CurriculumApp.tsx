@@ -269,7 +269,7 @@ export function CurriculumApp() {
               type="button"
               onClick={() => setHelpDialogOpen((prev) => !prev)}
               aria-expanded={helpDialogOpen}
-              aria-controls="track-dialog"
+              aria-controls="help-dialog"
               aria-label="Help"
               title="Help"
             >

@@ -50,9 +50,20 @@ describe('HelpDialog', () => {
 
     expect(getByRole('dialog', { name: 'Help' })).toBeInTheDocument()
     expect(getByText('General')).toBeInTheDocument()
-    expect(getByText('Curriculum')).toBeInTheDocument()
+    expect(getByText('Legend')).toBeInTheDocument()
     expect(getByText('Tracks')).toBeInTheDocument()
-    expect(getByText('A11y')).toBeInTheDocument()
+    expect(getByText('Accessibility')).toBeInTheDocument()
+  })
+
+  it('focuses the close button when opening', () => {
+    const { getByRole, rerender } = render(
+      <HelpDialog curriculum={null} open={false} onClose={() => {}} />,
+    )
+
+    rerender(<HelpDialog curriculum={null} open={true} onClose={() => {}} />)
+
+    const closeButton = getByRole('button', { name: 'Close' })
+    expect(document.activeElement).toBe(closeButton)
   })
 
   it('calls onClose when clicking the close button', () => {
@@ -65,69 +76,75 @@ describe('HelpDialog', () => {
   })
 
   it('defaults to the General tab and can switch between tabs', () => {
-    const { container, getByText } = render(
-      <HelpDialog curriculum={null} open={true} onClose={() => {}} />,
-    )
+    const { getByRole } = render(<HelpDialog curriculum={null} open={true} onClose={() => {}} />)
 
-    const infoRadio = container.querySelector('#track-dialog-tab-info') as HTMLInputElement | null
-    const curriculumLegendRadio = container.querySelector(
-      '#track-dialog-tab-curriculum-legend',
-    ) as HTMLInputElement | null
-    const trackLegendRadio = container.querySelector(
-      '#track-dialog-tab-track-legend',
-    ) as HTMLInputElement | null
-    const a11yRadio = container.querySelector('#track-dialog-tab-a11y') as HTMLInputElement | null
+    const generalTab = getByRole('tab', { name: 'General' })
+    const legendTab = getByRole('tab', { name: 'Legend' })
+    const tracksTab = getByRole('tab', { name: 'Tracks' })
+    const a11yTab = getByRole('tab', { name: 'Accessibility' })
 
-    expect(infoRadio).not.toBeNull()
-    expect(curriculumLegendRadio).not.toBeNull()
-    expect(trackLegendRadio).not.toBeNull()
-    expect(a11yRadio).not.toBeNull()
+    expect(generalTab).toHaveAttribute('aria-selected', 'true')
+    expect(legendTab).toHaveAttribute('aria-selected', 'false')
+    expect(tracksTab).toHaveAttribute('aria-selected', 'false')
+    expect(a11yTab).toHaveAttribute('aria-selected', 'false')
 
-    expect(infoRadio?.checked).toBe(true)
-    expect(curriculumLegendRadio?.checked).toBe(false)
-    expect(trackLegendRadio?.checked).toBe(false)
-    expect(a11yRadio?.checked).toBe(false)
+    fireEvent.click(legendTab)
+    expect(legendTab).toHaveAttribute('aria-selected', 'true')
 
-    fireEvent.click(getByText('Curriculum'))
-    expect(infoRadio?.checked).toBe(false)
-    expect(curriculumLegendRadio?.checked).toBe(true)
-    expect(trackLegendRadio?.checked).toBe(false)
+    fireEvent.click(tracksTab)
+    expect(tracksTab).toHaveAttribute('aria-selected', 'true')
 
-    fireEvent.click(getByText('Tracks'))
-    expect(infoRadio?.checked).toBe(false)
-    expect(curriculumLegendRadio?.checked).toBe(false)
-    expect(trackLegendRadio?.checked).toBe(true)
-    expect(a11yRadio?.checked).toBe(false)
+    fireEvent.click(a11yTab)
+    expect(a11yTab).toHaveAttribute('aria-selected', 'true')
 
-    fireEvent.click(getByText('A11y'))
-    expect(infoRadio?.checked).toBe(false)
-    expect(curriculumLegendRadio?.checked).toBe(false)
-    expect(trackLegendRadio?.checked).toBe(false)
-    expect(a11yRadio?.checked).toBe(true)
+    fireEvent.click(generalTab)
+    expect(generalTab).toHaveAttribute('aria-selected', 'true')
+  })
 
-    fireEvent.click(getByText('General'))
-    expect(infoRadio?.checked).toBe(true)
-    expect(curriculumLegendRadio?.checked).toBe(false)
-    expect(trackLegendRadio?.checked).toBe(false)
-    expect(a11yRadio?.checked).toBe(false)
+  it('activates the next/previous tab with arrow keys', () => {
+    const { getByRole } = render(<HelpDialog curriculum={null} open={true} onClose={() => {}} />)
+
+    const generalTab = getByRole('tab', { name: 'General' }) as HTMLButtonElement
+    const legendTab = getByRole('tab', { name: 'Legend' })
+    const a11yTab = getByRole('tab', { name: 'Accessibility' })
+
+    generalTab.focus()
+    expect(document.activeElement).toBe(generalTab)
+
+    fireEvent.keyDown(generalTab, { key: 'ArrowRight' })
+    expect(legendTab).toHaveAttribute('aria-selected', 'true')
+    expect(document.activeElement).toBe(legendTab)
+
+    fireEvent.keyDown(legendTab, { key: 'ArrowLeft' })
+    expect(generalTab).toHaveAttribute('aria-selected', 'true')
+    expect(document.activeElement).toBe(generalTab)
+
+    fireEvent.keyDown(generalTab, { key: 'ArrowLeft' })
+    expect(a11yTab).toHaveAttribute('aria-selected', 'true')
+    expect(document.activeElement).toBe(a11yTab)
   })
 
   it('shows the track legend empty state when curriculum is null', () => {
-    const { getByText } = render(<HelpDialog curriculum={null} open={true} onClose={() => {}} />)
+    const { getByRole, getByText } = render(
+      <HelpDialog curriculum={null} open={true} onClose={() => {}} />,
+    )
 
-    fireEvent.click(getByText('Tracks'))
+    fireEvent.click(getByRole('tab', { name: 'Tracks' }))
 
+    expect(getByRole('tabpanel', { name: 'Tracks' })).toBeInTheDocument()
     getByText('Load a curriculum to see tracks.')
   })
 
   it('renders track rows when curriculum is provided', () => {
     const curriculum = buildCurriculumFixture()
 
-    const { getByText } = render(
+    const { getByRole, getByText } = render(
       <HelpDialog curriculum={curriculum} open={true} onClose={() => {}} />,
     )
 
-    fireEvent.click(getByText('Tracks'))
+    fireEvent.click(getByRole('tab', { name: 'Tracks' }))
+
+    expect(getByRole('tabpanel', { name: 'Tracks' })).toBeInTheDocument()
 
     getByText('Track One')
     getByText('Track Two')
