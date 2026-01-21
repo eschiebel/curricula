@@ -174,7 +174,11 @@ export function CurriculumApp() {
     <div className="app-shell">
       <div className="top-bar">
         <div className="top-bar-title">
-          <img src="/curricula.svg" alt="Curricula logo" className="top-bar-logo" />
+          <img
+            src={`${import.meta.env.BASE_URL}curricula.svg`}
+            alt="Curricula logo"
+            className="top-bar-logo"
+          />
           <h1>Curriculum Visualizer</h1>
         </div>
         <div className="controls">

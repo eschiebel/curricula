@@ -2,7 +2,9 @@ import { defineConfig } from 'vite'
 import preact from '@preact/preset-vite'
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: '/curricula',
-  plugins: [preact()],
+export default defineConfig(({ command }) => {
+  return {
+    base: command === 'serve' ? '/' : '/curricula/',
+    plugins: [preact()],
+  }
 })
