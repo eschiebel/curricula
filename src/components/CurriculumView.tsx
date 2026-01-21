@@ -11,6 +11,7 @@ export interface CurriculumViewProps {
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
   onRegisterResetViewport?: (reset: (() => void) | null) => void
   onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
+  onRegisterZoomBy?: (zoomBy: ((delta: number) => void) | null) => void
 }
 
 export function CurriculumView(props: CurriculumViewProps) {
@@ -21,6 +22,7 @@ export function CurriculumView(props: CurriculumViewProps) {
     onCourseMoved,
     onRegisterResetViewport,
     onRegisterPanBy,
+    onRegisterZoomBy,
   } = props
 
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
@@ -84,6 +86,7 @@ export function CurriculumView(props: CurriculumViewProps) {
         focusedSemesterId={focusedSemesterId}
         onRegisterResetViewport={onRegisterResetViewport}
         onRegisterPanBy={onRegisterPanBy}
+        onRegisterZoomBy={onRegisterZoomBy}
       />
       <CurriculumList
         curriculum={curriculum}

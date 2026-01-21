@@ -47,6 +47,7 @@ export interface RenderOptions {
   focusedSemesterId?: string | null
   onRegisterResetViewport?: (reset: (() => void) | null) => void
   onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
+  onRegisterZoomBy?: (zoomBy: ((delta: number) => void) | null) => void
 }
 
 export interface CurriculumGraphProps extends RenderOptions {
@@ -210,6 +211,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     focusedSemesterId,
     onRegisterResetViewport,
     onRegisterPanBy,
+    onRegisterZoomBy,
   } = props
   const containerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<Core | null>(null)
@@ -253,6 +255,25 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       onRegisterPanBy(null)
     }
   }, [onRegisterPanBy])
+
+  useEffect(() => {
+    if (!onRegisterZoomBy) return
+
+    onRegisterZoomBy((delta: number) => {
+      const cy = cyRef.current
+      if (!cy) return
+
+      const current = cy.zoom()
+      const target = Math.min(3, Math.max(0.2, current + delta))
+
+      const renderedCenter = { x: cy.width() / 2, y: cy.height() / 2 }
+      cy.zoom({ level: target, renderedPosition: renderedCenter })
+    })
+
+    return () => {
+      onRegisterZoomBy(null)
+    }
+  }, [onRegisterZoomBy])
 
   useEffect(() => {
     const container = containerRef.current

@@ -4,14 +4,13 @@ import { CurriculumView } from './CurriculumView'
 import { TrackDialog } from './TrackDialog'
 
 export function CurriculumApp() {
-  const containerRef = useRef<HTMLDivElement | null>(null)
   const resetViewportRef = useRef<(() => void) | null>(null)
   const panByRef = useRef<((dx: number, dy: number) => void) | null>(null)
+  const zoomByRef = useRef<((delta: number) => void) | null>(null)
   const [status, setStatusState] = useState<string>('No file loaded.')
   const [statusError, setStatusError] = useState<boolean>(false)
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null)
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
-  const [zoom, setZoom] = useState<number>(1)
   const [movedCourseIds, setMovedCourseIds] = useState<string[]>([])
   const [trackDialogOpen, setTrackDialogOpen] = useState<boolean>(false)
 
@@ -37,14 +36,6 @@ export function CurriculumApp() {
     },
     [setStatus],
   )
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-    const zoomFactor = zoom
-    container.style.transformOrigin = '0 0'
-    container.style.transform = `scale(${zoomFactor})`
-  }, [zoom])
 
   type InputChangeEvent = Event & {
     currentTarget: HTMLInputElement
@@ -76,7 +67,7 @@ export function CurriculumApp() {
   }
 
   const loadCurriculumFromPath = (relativePath: string) => {
-    const samplePath = `${import.meta.env.BASE_URL}/data/${relativePath}`
+    const samplePath = `${import.meta.env.BASE_URL}data/${relativePath}`
     fetch(samplePath)
       .then((response) => {
         if (!response.ok) {
@@ -92,15 +83,14 @@ export function CurriculumApp() {
   }
 
   const zoomIn = useCallback(() => {
-    setZoom((z) => Math.min(3, z + 0.1))
+    zoomByRef.current?.(0.1)
   }, [])
 
   const zoomOut = useCallback(() => {
-    setZoom((z) => Math.max(0.2, z - 0.1))
+    zoomByRef.current?.(-0.1)
   }, [])
 
   const resetZoom = useCallback(() => {
-    setZoom(1)
     resetViewportRef.current?.()
   }, [])
 
@@ -110,6 +100,10 @@ export function CurriculumApp() {
 
   const handleRegisterPanBy = useCallback((panBy: ((dx: number, dy: number) => void) | null) => {
     panByRef.current = panBy
+  }, [])
+
+  const handleRegisterZoomBy = useCallback((zoomBy: ((delta: number) => void) | null) => {
+    zoomByRef.current = zoomBy
   }, [])
 
   const panStep = 80
@@ -285,7 +279,7 @@ export function CurriculumApp() {
         </div>
         <TrackDialog curriculum={curriculum} open={trackDialogOpen} onClose={handleCloseDialog} />
       </div>
-      <div className="graph-container" ref={containerRef}>
+      <div className="graph-container">
         {curriculum && (
           <CurriculumView
             curriculum={curriculum}
@@ -294,6 +288,7 @@ export function CurriculumApp() {
             onCourseMoved={handleCourseMoved}
             onRegisterResetViewport={handleRegisterResetViewport}
             onRegisterPanBy={handleRegisterPanBy}
+            onRegisterZoomBy={handleRegisterZoomBy}
           />
         )}
       </div>

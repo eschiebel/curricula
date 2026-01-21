@@ -5,6 +5,7 @@ const curriculumViewMocks = vi.hoisted(() => {
   return {
     panBy: vi.fn<(dx: number, dy: number) => void>(),
     resetViewport: vi.fn<() => void>(),
+    zoomBy: vi.fn<(delta: number) => void>(),
   }
 })
 
@@ -15,6 +16,7 @@ vi.mock('../components/CurriculumView', () => {
       onCourseMoved?: (courseId: string, newSemesterId: string) => void
       onRegisterResetViewport?: (reset: (() => void) | null) => void
       onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
+      onRegisterZoomBy?: (zoomBy: ((delta: number) => void) | null) => void
     }) => (
       <div>
         <button
@@ -22,6 +24,7 @@ vi.mock('../components/CurriculumView', () => {
           onClick={() => {
             props.onRegisterResetViewport?.(curriculumViewMocks.resetViewport)
             props.onRegisterPanBy?.(curriculumViewMocks.panBy)
+            props.onRegisterZoomBy?.(curriculumViewMocks.zoomBy)
             props.onCourseMoved?.('C1', 's1')
           }}
         >
@@ -36,6 +39,7 @@ describe('CurriculumApp', () => {
   beforeEach(() => {
     curriculumViewMocks.panBy.mockClear()
     curriculumViewMocks.resetViewport.mockClear()
+    curriculumViewMocks.zoomBy.mockClear()
   })
 
   function buildCurriculumJson() {
@@ -341,6 +345,33 @@ describe('CurriculumApp', () => {
     fireEvent.click(getByRole('button', { name: 'Reset' }))
 
     expect(curriculumViewMocks.resetViewport).toHaveBeenCalledTimes(1)
+
+    fetchSpy.mockRestore()
+  })
+
+  it('wires zoom controls to CurriculumView onRegisterZoomBy', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(buildCurriculumJson(), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const { CurriculumApp } = await import('../components/CurriculumApp')
+    const { getByRole, getByText } = render(<CurriculumApp />)
+
+    fireEvent.click(getByRole('button', { name: 'Load BSME' }))
+    await waitFor(() => {
+      expect(getByText('Loaded bs-me.json.')).toBeInTheDocument()
+    })
+
+    fireEvent.click(getByRole('button', { name: 'Simulate move' }))
+
+    fireEvent.click(getByRole('button', { name: '+' }))
+    expect(curriculumViewMocks.zoomBy).toHaveBeenCalledWith(0.1)
+
+    fireEvent.click(getByRole('button', { name: '-' }))
+    expect(curriculumViewMocks.zoomBy).toHaveBeenCalledWith(-0.1)
 
     fetchSpy.mockRestore()
   })
