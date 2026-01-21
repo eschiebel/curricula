@@ -54,6 +54,7 @@ describe('TrackDialog', () => {
     expect(getByText('General')).toBeInTheDocument()
     expect(getByText('Curriculum')).toBeInTheDocument()
     expect(getByText('Tracks')).toBeInTheDocument()
+    expect(getByText('A11y')).toBeInTheDocument()
   })
 
   it('calls onClose when clicking the close button', () => {
@@ -77,14 +78,17 @@ describe('TrackDialog', () => {
     const trackLegendRadio = container.querySelector(
       '#track-dialog-tab-track-legend',
     ) as HTMLInputElement | null
+    const a11yRadio = container.querySelector('#track-dialog-tab-a11y') as HTMLInputElement | null
 
     expect(infoRadio).not.toBeNull()
     expect(curriculumLegendRadio).not.toBeNull()
     expect(trackLegendRadio).not.toBeNull()
+    expect(a11yRadio).not.toBeNull()
 
     expect(infoRadio?.checked).toBe(true)
     expect(curriculumLegendRadio?.checked).toBe(false)
     expect(trackLegendRadio?.checked).toBe(false)
+    expect(a11yRadio?.checked).toBe(false)
 
     fireEvent.click(getByText('Curriculum'))
     expect(infoRadio?.checked).toBe(false)
@@ -95,11 +99,19 @@ describe('TrackDialog', () => {
     expect(infoRadio?.checked).toBe(false)
     expect(curriculumLegendRadio?.checked).toBe(false)
     expect(trackLegendRadio?.checked).toBe(true)
+    expect(a11yRadio?.checked).toBe(false)
+
+    fireEvent.click(getByText('A11y'))
+    expect(infoRadio?.checked).toBe(false)
+    expect(curriculumLegendRadio?.checked).toBe(false)
+    expect(trackLegendRadio?.checked).toBe(false)
+    expect(a11yRadio?.checked).toBe(true)
 
     fireEvent.click(getByText('General'))
     expect(infoRadio?.checked).toBe(true)
     expect(curriculumLegendRadio?.checked).toBe(false)
     expect(trackLegendRadio?.checked).toBe(false)
+    expect(a11yRadio?.checked).toBe(false)
   })
 
   it('shows the track legend empty state when curriculum is null', () => {

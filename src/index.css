@@ -230,6 +230,8 @@ li.course-selected {
 }
 
 .legend {
+  display: flex;
+  justify-content: space-around;
   margin-top: 6px;
   font-size: 11px;
   color: #555;
@@ -278,6 +280,11 @@ li.course-selected {
         background-image: url(data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M-3%203%20L3%20-3%20M0%2012%20L12%200%20M9%2015%20L15%209%22%20stroke%3D%22rgba\(0%2C0%2C0%2C0.35\)%22%20stroke-width%3D%221%22%2F%3E%3Cpath%20d%3D%22M15%203%20L9%20-3%20M12%2012%20L0%200%20M3%2015%20L-3%209%22%20stroke%3D%22rgba\(0%2C0%2C0%2C0.35\)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E);
         background-size: 6px;
       }
+
+      &.selected {
+        border-color: #e67e22;
+        border-width: 2px;
+      }
     }
   }
 }
@@ -286,7 +293,8 @@ li.course-selected {
   position: absolute;
   top: 12px;
   right: 20px;
-  width: 320px;
+  width: 460px;
+  max-width: calc(100vw - 40px);
   max-height: calc(100vh - 80px);
   overflow: auto;
   background: #ffffff;
@@ -313,7 +321,7 @@ li.course-selected {
 
 .track-dialog-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   column-gap: 6px;
   row-gap: 0;
 }
@@ -334,8 +342,6 @@ li.course-selected {
   color: #2c3e50;
   user-select: none;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .track-dialog-tab-panels {
@@ -359,7 +365,8 @@ li.course-selected {
 #track-dialog-tab-curriculum-legend:checked
   ~ .track-dialog-tab-panels
   .track-dialog-panel:nth-child(2),
-#track-dialog-tab-track-legend:checked ~ .track-dialog-tab-panels .track-dialog-panel:nth-child(3) {
+#track-dialog-tab-track-legend:checked ~ .track-dialog-tab-panels .track-dialog-panel:nth-child(3),
+#track-dialog-tab-a11y:checked ~ .track-dialog-tab-panels .track-dialog-panel:nth-child(4) {
   visibility: visible;
   pointer-events: auto;
 }

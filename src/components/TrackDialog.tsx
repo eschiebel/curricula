@@ -41,17 +41,6 @@ export function TrackDialog(props: TrackDialogProps) {
   const renderCurriculumLegend = () => {
     return (
       <div className="legend">
-        <h3>Legend</h3>
-        <div className="edges">
-          <span className="legend-item">
-            <span className="legend-line" />
-            Prerequisite
-          </span>
-          <span className="legend-item">
-            <span className="legend-line coreq" />
-            Corequisite
-          </span>
-        </div>
         <div className="nodes">
           <span className="legend-item">
             <span className="legend-node" />
@@ -62,8 +51,23 @@ export function TrackDialog(props: TrackDialogProps) {
             Course has been moved
           </span>
           <span className="legend-item">
+            <span className="legend-node selected" />
+            Course is selected
+          </span>
+          <span className="legend-item">
             <span className="legend-node violation" />
             Course violates pre or corequisites
+          </span>
+        </div>
+
+        <div className="edges">
+          <span className="legend-item">
+            <span className="legend-line" />
+            Prerequisite
+          </span>
+          <span className="legend-item">
+            <span className="legend-line coreq" />
+            Corequisite
           </span>
         </div>
       </div>
@@ -94,6 +98,16 @@ export function TrackDialog(props: TrackDialogProps) {
     )
   }
 
+  const renderA11yHelp = () => {
+    return (
+      <div className="track-dialog-a11y">
+        <p>Use the tab key to navigate between semesters.</p>
+        <p>Use the up and down arrow keys to navigate between courses within a semester.</p>
+        <p>Uaw shift-right or left arrow keys to move a course to the next or previous semester.</p>
+      </div>
+    )
+  }
+
   return (
     <div id="track-dialog" className="track-dialog" role="dialog" aria-label="Help">
       <div className="track-dialog-header">
@@ -113,12 +127,17 @@ export function TrackDialog(props: TrackDialogProps) {
         <input type="radio" name="track-dialog-tabset" id="track-dialog-tab-track-legend" />
         <label htmlFor="track-dialog-tab-track-legend">Tracks</label>
 
+        <input type="radio" name="track-dialog-tabset" id="track-dialog-tab-a11y" />
+        <label htmlFor="track-dialog-tab-a11y">A11y</label>
+
         <div className="track-dialog-tab-panels">
           <section className="track-dialog-panel">{renderGeneralInfo()}</section>
 
           <section className="track-dialog-panel">{renderCurriculumLegend()}</section>
 
           <section className="track-dialog-panel">{renderTrackLegend()}</section>
+
+          <section className="track-dialog-panel">{renderA11yHelp()}</section>
         </div>
       </div>
     </div>
