@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/preact'
 import { describe, expect, it, vi } from 'vitest'
 import type { Course, Curriculum, Semester, TrackDefinition } from '../components/CurriculumGraph'
-import { TrackDialog } from '../components/TrackDialog'
+import { HelpDialog } from '../components/HelpDialog'
 
 function buildCurriculumFixture(overrides?: Partial<Curriculum>): Curriculum {
   const semesters: Semester[] = overrides?.semesters ?? [{ id: 's1', name: 'Semester 1', order: 1 }]
@@ -36,18 +36,16 @@ function buildCurriculumFixture(overrides?: Partial<Curriculum>): Curriculum {
   }
 }
 
-describe('TrackDialog', () => {
+describe('HelpDialog', () => {
   it('does not render when open is false', () => {
-    const { queryByRole } = render(
-      <TrackDialog curriculum={null} open={false} onClose={() => {}} />,
-    )
+    const { queryByRole } = render(<HelpDialog curriculum={null} open={false} onClose={() => {}} />)
 
     expect(queryByRole('dialog')).toBeNull()
   })
 
   it('renders when open is true', () => {
     const { getByRole, getByText } = render(
-      <TrackDialog curriculum={null} open={true} onClose={() => {}} />,
+      <HelpDialog curriculum={null} open={true} onClose={() => {}} />,
     )
 
     expect(getByRole('dialog', { name: 'Help' })).toBeInTheDocument()
@@ -60,7 +58,7 @@ describe('TrackDialog', () => {
   it('calls onClose when clicking the close button', () => {
     const onClose = vi.fn()
 
-    const { getByRole } = render(<TrackDialog curriculum={null} open={true} onClose={onClose} />)
+    const { getByRole } = render(<HelpDialog curriculum={null} open={true} onClose={onClose} />)
 
     fireEvent.click(getByRole('button', { name: 'Close' }))
     expect(onClose).toHaveBeenCalledTimes(1)
@@ -68,7 +66,7 @@ describe('TrackDialog', () => {
 
   it('defaults to the General tab and can switch between tabs', () => {
     const { container, getByText } = render(
-      <TrackDialog curriculum={null} open={true} onClose={() => {}} />,
+      <HelpDialog curriculum={null} open={true} onClose={() => {}} />,
     )
 
     const infoRadio = container.querySelector('#track-dialog-tab-info') as HTMLInputElement | null
@@ -115,7 +113,7 @@ describe('TrackDialog', () => {
   })
 
   it('shows the track legend empty state when curriculum is null', () => {
-    const { getByText } = render(<TrackDialog curriculum={null} open={true} onClose={() => {}} />)
+    const { getByText } = render(<HelpDialog curriculum={null} open={true} onClose={() => {}} />)
 
     fireEvent.click(getByText('Tracks'))
 
@@ -126,7 +124,7 @@ describe('TrackDialog', () => {
     const curriculum = buildCurriculumFixture()
 
     const { getByText } = render(
-      <TrackDialog curriculum={curriculum} open={true} onClose={() => {}} />,
+      <HelpDialog curriculum={curriculum} open={true} onClose={() => {}} />,
     )
 
     fireEvent.click(getByText('Tracks'))

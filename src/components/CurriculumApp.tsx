@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import type { Curriculum } from './CurriculumGraph'
 import { CurriculumView } from './CurriculumView'
-import { TrackDialog } from './TrackDialog'
+import { HelpDialog } from './HelpDialog'
 
 export function CurriculumApp() {
   const resetViewportRef = useRef<(() => void) | null>(null)
@@ -12,7 +12,7 @@ export function CurriculumApp() {
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null)
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
   const [movedCourseIds, setMovedCourseIds] = useState<string[]>([])
-  const [trackDialogOpen, setTrackDialogOpen] = useState<boolean>(false)
+  const [helpDialogOpen, setHelpDialogOpen] = useState<boolean>(false)
 
   const setStatus = useCallback((text: string, isError = false) => {
     setStatusState(text)
@@ -147,14 +147,14 @@ export function CurriculumApp() {
   }, [curriculum, loadedFileName, setStatus])
 
   const handleCloseDialog = useCallback(() => {
-    setTrackDialogOpen(false)
+    setHelpDialogOpen(false)
     ;(document.querySelector('button.help-button') as HTMLButtonElement)?.focus()
   }, [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' || event.key === 'Esc') {
-        setTrackDialogOpen(false)
+        setHelpDialogOpen(false)
       }
     }
 
@@ -267,8 +267,8 @@ export function CurriculumApp() {
             <button
               className="help-button"
               type="button"
-              onClick={() => setTrackDialogOpen((prev) => !prev)}
-              aria-expanded={trackDialogOpen}
+              onClick={() => setHelpDialogOpen((prev) => !prev)}
+              aria-expanded={helpDialogOpen}
               aria-controls="track-dialog"
               aria-label="Help"
               title="Help"
@@ -277,7 +277,7 @@ export function CurriculumApp() {
             </button>
           </div>
         </div>
-        <TrackDialog curriculum={curriculum} open={trackDialogOpen} onClose={handleCloseDialog} />
+        <HelpDialog curriculum={curriculum} open={helpDialogOpen} onClose={handleCloseDialog} />
       </div>
       <div className="graph-container">
         {curriculum && (

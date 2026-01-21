@@ -2,13 +2,13 @@ import { useMemo } from 'preact/hooks'
 import type { Curriculum } from './CurriculumGraph'
 import { getCurriculumTrackInfo, getTrackColor } from './CurriculumGraph'
 
-export interface TrackDialogProps {
+export interface HelpDialogProps {
   curriculum: Curriculum | null
   open: boolean
   onClose: () => void
 }
 
-export function TrackDialog(props: TrackDialogProps) {
+export function HelpDialog(props: HelpDialogProps) {
   const { curriculum, open, onClose } = props
 
   const trackInfo = useMemo(() => {
@@ -20,7 +20,7 @@ export function TrackDialog(props: TrackDialogProps) {
 
   const renderGeneralInfo = () => {
     return (
-      <div className="track-dialog-info">
+      <div className="help-dialog-info">
         <div>
           Load a curriculum JSON to view and edit a curriculum. (The{' '}
           <span style={{ fontWeight: 'bold' }}>Load BSME</span> button loads a sample curriculum
@@ -76,15 +76,15 @@ export function TrackDialog(props: TrackDialogProps) {
 
   const renderTrackLegend = () => {
     if (!(curriculum && trackInfo)) {
-      return <div className="track-dialog-empty">Load a curriculum to see tracks.</div>
+      return <div className="help-dialog-empty">Load a curriculum to see tracks.</div>
     }
 
     return (
-      <div className="track-dialog-grid">
+      <div className="help-dialog-grid">
         {trackInfo.trackOrder.map((trackId) => {
           const color = getTrackColor(trackInfo, trackId)
           return (
-            <div key={trackId} className="track-dialog-row" style={{ backgroundColor: color }}>
+            <div key={trackId} className="help-dialog-row" style={{ backgroundColor: color }}>
               <span
                 className="track-swatch"
                 style={{ backgroundColor: color }}
@@ -100,44 +100,44 @@ export function TrackDialog(props: TrackDialogProps) {
 
   const renderA11yHelp = () => {
     return (
-      <div className="track-dialog-a11y">
+      <div className="help-dialog-a11y">
         <p>Use the tab key to navigate between semesters.</p>
         <p>Use the up and down arrow keys to navigate between courses within a semester.</p>
-        <p>Uaw shift-right or left arrow keys to move a course to the next or previous semester.</p>
+        <p>Use shift-right or left arrow keys to move a course to the next or previous semester.</p>
       </div>
     )
   }
 
   return (
-    <div id="track-dialog" className="track-dialog" role="dialog" aria-label="Help">
-      <div className="track-dialog-header">
-        <h2 className="track-dialog-title">Help</h2>
+    <div id="help-dialog" className="help-dialog" role="dialog" aria-label="Help">
+      <div className="help-dialog-header">
+        <h2 className="help-dialog-title">Help</h2>
         <button type="button" className="close-button" onClick={onClose} aria-label="Close">
           X
         </button>
       </div>
 
-      <div className="track-dialog-tabs">
-        <input type="radio" name="track-dialog-tabset" id="track-dialog-tab-info" defaultChecked />
-        <label htmlFor="track-dialog-tab-info">General</label>
+      <div className="help-dialog-tabs">
+        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-info" defaultChecked />
+        <label htmlFor="help-dialog-tab-info">General</label>
 
-        <input type="radio" name="track-dialog-tabset" id="track-dialog-tab-curriculum-legend" />
-        <label htmlFor="track-dialog-tab-curriculum-legend">Curriculum</label>
+        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-curriculum-legend" />
+        <label htmlFor="help-dialog-tab-curriculum-legend">Legend</label>
 
-        <input type="radio" name="track-dialog-tabset" id="track-dialog-tab-track-legend" />
-        <label htmlFor="track-dialog-tab-track-legend">Tracks</label>
+        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-track-legend" />
+        <label htmlFor="help-dialog-tab-track-legend">Tracks</label>
 
-        <input type="radio" name="track-dialog-tabset" id="track-dialog-tab-a11y" />
-        <label htmlFor="track-dialog-tab-a11y">A11y</label>
+        <input type="radio" name="help-dialog-tabset" id="help-dialog-tab-a11y" />
+        <label htmlFor="help-dialog-tab-a11y">Accessibility</label>
 
-        <div className="track-dialog-tab-panels">
-          <section className="track-dialog-panel">{renderGeneralInfo()}</section>
+        <div className="help-dialog-tab-panels">
+          <section className="help-dialog-panel">{renderGeneralInfo()}</section>
 
-          <section className="track-dialog-panel">{renderCurriculumLegend()}</section>
+          <section className="help-dialog-panel">{renderCurriculumLegend()}</section>
 
-          <section className="track-dialog-panel">{renderTrackLegend()}</section>
+          <section className="help-dialog-panel">{renderTrackLegend()}</section>
 
-          <section className="track-dialog-panel">{renderA11yHelp()}</section>
+          <section className="help-dialog-panel">{renderA11yHelp()}</section>
         </div>
       </div>
     </div>

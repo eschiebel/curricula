@@ -233,7 +233,6 @@ li.course-selected {
   display: flex;
   justify-content: space-around;
   margin-top: 6px;
-  font-size: 11px;
   color: #555;
 
   .nodes {
@@ -289,7 +288,7 @@ li.course-selected {
   }
 }
 
-.track-dialog {
+.help-dialog {
   position: absolute;
   top: 12px;
   right: 20px;
@@ -305,7 +304,7 @@ li.course-selected {
   z-index: 5;
 }
 
-.track-dialog-header {
+.help-dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -313,24 +312,23 @@ li.course-selected {
   margin-bottom: 8px;
 }
 
-.track-dialog-title {
+.help-dialog-title {
   font-weight: 700;
-  font-size: 13px;
   color: #2c3e50;
 }
 
-.track-dialog-tabs {
+.help-dialog-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   column-gap: 6px;
   row-gap: 0;
 }
 
-.track-dialog-tabs > input {
+.help-dialog-tabs > input {
   display: none;
 }
 
-.track-dialog-tabs > label {
+.help-dialog-tabs > label {
   padding: 6px 10px;
   background: #f3f3f3;
   border-color: rgba(0, 0, 0, 0.12);
@@ -344,7 +342,7 @@ li.course-selected {
   white-space: nowrap;
 }
 
-.track-dialog-tab-panels {
+.help-dialog-tab-panels {
   grid-column: 1 / -1;
   padding: 10px;
   border: 1px solid rgba(0, 0, 0, 0.12);
@@ -355,48 +353,48 @@ li.course-selected {
   grid-template-areas: "panel";
 }
 
-.track-dialog-panel {
+.help-dialog-panel {
   grid-area: panel;
   visibility: hidden;
   pointer-events: none;
 }
 
-#track-dialog-tab-info:checked ~ .track-dialog-tab-panels .track-dialog-panel:nth-child(1),
-#track-dialog-tab-curriculum-legend:checked
-  ~ .track-dialog-tab-panels
-  .track-dialog-panel:nth-child(2),
-#track-dialog-tab-track-legend:checked ~ .track-dialog-tab-panels .track-dialog-panel:nth-child(3),
-#track-dialog-tab-a11y:checked ~ .track-dialog-tab-panels .track-dialog-panel:nth-child(4) {
+#help-dialog-tab-info:checked ~ .help-dialog-tab-panels .help-dialog-panel:nth-child(1),
+#help-dialog-tab-curriculum-legend:checked
+  ~ .help-dialog-tab-panels
+  .help-dialog-panel:nth-child(2),
+#help-dialog-tab-track-legend:checked ~ .help-dialog-tab-panels .help-dialog-panel:nth-child(3),
+#help-dialog-tab-a11y:checked ~ .help-dialog-tab-panels .help-dialog-panel:nth-child(4) {
   visibility: visible;
   pointer-events: auto;
 }
 
-.track-dialog-tabs > input:checked + label {
+.help-dialog-tabs > input:checked + label {
   background: #ffffff;
   position: relative;
   z-index: 2;
   margin-bottom: -1px;
 }
 
-.track-dialog-info {
+.help-dialog-info {
   display: grid;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.9rem;
   color: #2c3e50;
 }
 
-.track-dialog-empty {
+.help-dialog-empty {
   font-size: 12px;
   color: #555;
 }
 
-.track-dialog-grid {
+.help-dialog-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 6px;
 }
 
-.track-dialog-row {
+.help-dialog-row {
   display: flex;
   align-items: center;
   gap: 8px;
