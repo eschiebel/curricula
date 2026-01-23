@@ -37,14 +37,15 @@ export function CurriculumView(props: CurriculumViewProps) {
       const course = curriculum.courses.find((c) => c.id === courseId)
       if (!course) return
 
-      const currentIndex = semestersSorted.findIndex((s) => s.id === course.semesterId)
+      const currentSemesterId = course.new_semester ?? course.semesterId
+      const currentIndex = semestersSorted.findIndex((s) => s.id === currentSemesterId)
       if (currentIndex < 0) return
 
       const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1
       if (targetIndex < 0 || targetIndex >= semestersSorted.length) return
 
       const newSemesterId = semestersSorted[targetIndex]?.id
-      if (!newSemesterId || newSemesterId === course.semesterId) return
+      if (!newSemesterId || newSemesterId === currentSemesterId) return
 
       onCourseMoved(courseId, newSemesterId)
 

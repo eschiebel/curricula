@@ -10,6 +10,7 @@ export interface Course {
   corequisiteIds: string[]
   /** Primary semester this course belongs to. */
   semesterId: string
+  new_semester?: string
   trackId?: string
 }
 
@@ -165,6 +166,10 @@ function buildTrackColors(trackOrder: string[]) {
   return colorById
 }
 
+function getEffectiveSemesterId(course: Course) {
+  return course.new_semester ?? course.semesterId
+}
+
 export function getCurriculumTrackInfo(curriculum: Curriculum): TrackInfo {
   const { order: configuredOrder, nameById: configuredNames } = parseTrackDefinitions(
     curriculum.tracks,
@@ -304,14 +309,16 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     const violatingCourseIds = new Set<string>()
     const violatingEdgeIds = new Set<string>()
     for (const course of curriculum.courses) {
-      const courseSemOrder = semesterOrderById[course.semesterId] ?? Number.POSITIVE_INFINITY
+      const courseSemOrder =
+        semesterOrderById[getEffectiveSemesterId(course)] ?? Number.POSITIVE_INFINITY
 
       if (Array.isArray(course.prerequisiteIds)) {
         for (const prereqId of course.prerequisiteIds) {
           if (!prereqId) continue
           const prereq = courseById[prereqId]
           if (!prereq) continue
-          const prereqSemOrder = semesterOrderById[prereq.semesterId] ?? Number.POSITIVE_INFINITY
+          const prereqSemOrder =
+            semesterOrderById[getEffectiveSemesterId(prereq)] ?? Number.POSITIVE_INFINITY
 
           // Course must be strictly AFTER prerequisite.
           if (courseSemOrder <= prereqSemOrder) {
@@ -326,7 +333,8 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           if (!coreqId) continue
           const coreq = courseById[coreqId]
           if (!coreq) continue
-          const coreqSemOrder = semesterOrderById[coreq.semesterId] ?? Number.POSITIVE_INFINITY
+          const coreqSemOrder =
+            semesterOrderById[getEffectiveSemesterId(coreq)] ?? Number.POSITIVE_INFINITY
 
           // Course must NOT be before a corequisite (coreq must be same semester or earlier).
           if (courseSemOrder < coreqSemOrder) {
@@ -370,32 +378,30 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
 
     for (const course of curriculum.courses) {
       const laneTrackId = course.trackId ?? 'untracked'
+      const effectiveSemesterId = getEffectiveSemesterId(course)
 
       if (!laneSemesterIndex[laneTrackId]) {
         laneSemesterIndex[laneTrackId] = {}
       }
 
       const bySemester = laneSemesterIndex[laneTrackId]
-      if (bySemester[course.semesterId] == null) {
-        bySemester[course.semesterId] = 0
+      if (bySemester[effectiveSemesterId] == null) {
+        bySemester[effectiveSemesterId] = 0
       }
 
-      const idx = bySemester[course.semesterId]++
-      const x = columnMap[course.semesterId] ?? 0
+      const idx = bySemester[effectiveSemesterId]++
+      const x = columnMap[effectiveSemesterId] ?? 0
       const lane = trackLaneIndex[laneTrackId] ?? trackOrder.length
       const laneBaseY = 120 + lane * 200
       const y = laneBaseY + idx * 95
 
-      let isMoved = false
-      if (Array.isArray(movedCourseIds)) {
-        isMoved = movedCourseIds.includes(course.id)
-      }
+      const isMoved = course.new_semester != null
 
       elements.push({
         data: {
           id: course.id,
           label: `${course.id}\n${course.name}\n${course.credits} cr`,
-          semester: course.semesterId,
+          semester: effectiveSemesterId,
           moved: isMoved ? 'true' : 'false',
           violation: violatingCourseIds.has(course.id) ? 'true' : 'false',
           trackId: laneTrackId,
@@ -474,6 +480,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           style: {
             'border-color': '#2980b9',
             'border-style': 'dashed',
+            'border-width': 3,
           },
         },
         {

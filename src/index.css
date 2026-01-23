@@ -280,8 +280,8 @@ li.course-selected {
       color: transparent;
 
       &.moved {
-        border-color: #2980b9;
         border-style: dashed;
+        border-width: 2px;
       }
 
       &.violation {

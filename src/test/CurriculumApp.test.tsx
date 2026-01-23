@@ -25,7 +25,7 @@ vi.mock('../components/CurriculumView', () => {
             props.onRegisterResetViewport?.(curriculumViewMocks.resetViewport)
             props.onRegisterPanBy?.(curriculumViewMocks.panBy)
             props.onRegisterZoomBy?.(curriculumViewMocks.zoomBy)
-            props.onCourseMoved?.('C1', 's1')
+            props.onCourseMoved?.('C1', 's2')
           }}
         >
           Simulate move

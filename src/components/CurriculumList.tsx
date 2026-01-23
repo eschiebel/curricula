@@ -36,10 +36,11 @@ export function CurriculumList(props: CurriculumListProps) {
 
   const coursesBySemester: Record<string, Course[]> = {}
   for (const course of curriculum.courses || []) {
-    if (!coursesBySemester[course.semesterId]) {
-      coursesBySemester[course.semesterId] = []
+    const effectiveSemesterId = course.new_semester ?? course.semesterId
+    if (!coursesBySemester[effectiveSemesterId]) {
+      coursesBySemester[effectiveSemesterId] = []
     }
-    coursesBySemester[course.semesterId].push(course)
+    coursesBySemester[effectiveSemesterId].push(course)
   }
 
   for (const semesterId of Object.keys(coursesBySemester)) {

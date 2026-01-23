@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import type { Curriculum } from './CurriculumGraph'
+import type { Course, Curriculum } from './CurriculumGraph'
 import { CurriculumView } from './CurriculumView'
 import { HelpDialog } from './HelpDialog'
 
@@ -24,14 +24,27 @@ export function CurriculumApp() {
       setCurriculum((prev) => {
         if (!prev) return prev
         const existing = prev.courses.find((c) => c.id === courseId)
-        if (!existing || existing.semesterId === newSemesterId) return prev
-        const updatedCourses = prev.courses.map((c) =>
-          c.id === courseId ? { ...c, semesterId: newSemesterId } : c,
-        )
-        return { ...prev, courses: updatedCourses }
-      })
+        if (!existing) return prev
 
-      setMovedCourseIds((prev) => (prev.includes(courseId) ? prev : [...prev, courseId]))
+        const defaultSemesterId = existing.semesterId
+        const currentSemesterId = existing.new_semester ?? existing.semesterId
+        if (newSemesterId === currentSemesterId) return prev
+
+        const updatedCourses: Course[] = prev.courses.map((c): Course => {
+          if (c.id !== courseId) return c
+          if (newSemesterId === defaultSemesterId) {
+            const { new_semester: _new_semester, ...rest } = c
+            return rest as Course
+          }
+          return { ...c, new_semester: newSemesterId }
+        })
+
+        const updated = { ...prev, courses: updatedCourses }
+        const movedIds = updatedCourses.filter((c) => c.new_semester != null).map((c) => c.id)
+        setMovedCourseIds(movedIds)
+
+        return updated
+      })
       setStatus(`Moved ${courseId} to semester ${newSemesterId}`)
     },
     [setStatus],
@@ -46,7 +59,12 @@ export function CurriculumApp() {
     try {
       const json = JSON.parse(jsonText)
       setCurriculum(json)
-      setMovedCourseIds([])
+      const movedIds = Array.isArray(json?.courses)
+        ? (json.courses as Array<{ id?: unknown; new_semester?: unknown }>)
+            .filter((c) => typeof c?.id === 'string' && c?.new_semester != null)
+            .map((c) => String(c.id))
+        : []
+      setMovedCourseIds(movedIds)
       setLoadedFileName(sourceDescription)
       setStatus(`Loaded ${sourceDescription}.`)
     } catch (err) {
