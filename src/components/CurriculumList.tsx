@@ -17,6 +17,18 @@ export function CurriculumList(props: CurriculumListProps) {
     (a, b) => a.order - b.order,
   )
 
+  const creditsBySemesterId: Record<string, number> = {}
+  for (const semester of semestersSorted) {
+    creditsBySemesterId[semester.id] = 0
+  }
+  for (const course of curriculum.courses || []) {
+    const effectiveSemesterId = course.new_semester ?? course.semesterId
+    if (creditsBySemesterId[effectiveSemesterId] == null) {
+      creditsBySemesterId[effectiveSemesterId] = 0
+    }
+    creditsBySemesterId[effectiveSemesterId] += course.credits
+  }
+
   const courseOrderIndex = new Map<string, number>()
   for (let i = 0; i < (curriculum.courses || []).length; i += 1) {
     const c = curriculum.courses[i]
@@ -137,10 +149,11 @@ export function CurriculumList(props: CurriculumListProps) {
     <div className="curriculum-list-offscreen">
       {semestersSorted.map((semester) => {
         const courses = coursesBySemester[semester.id] || []
+        const credits = creditsBySemesterId[semester.id] ?? 0
         return (
           <ul
             key={semester.id}
-            aria-label={semester.name}
+            aria-label={`${semester.name} (${credits} credits)`}
             role="listbox"
             tabIndex={0}
             data-semester-id={semester.id}

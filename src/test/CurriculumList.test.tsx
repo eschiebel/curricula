@@ -52,8 +52,8 @@ describe('CurriculumList', () => {
       />,
     )
 
-    getByRole('listbox', { name: 'Semester 1' })
-    getByRole('listbox', { name: 'Semester 2' })
+    getByRole('listbox', { name: 'Semester 1 (6 credits)' })
+    getByRole('listbox', { name: 'Semester 2 (3 credits)' })
 
     getByText('C1')
     getByText('C2')
@@ -77,7 +77,7 @@ describe('CurriculumList', () => {
       />,
     )
 
-    const semester1List = getByRole('listbox', { name: 'Semester 1' })
+    const semester1List = getByRole('listbox', { name: 'Semester 1 (6 credits)' })
     fireEvent.keyDown(semester1List, { key: 'ArrowDown' })
 
     expect(onCourseSelect).toHaveBeenCalledWith('C2')
@@ -100,7 +100,7 @@ describe('CurriculumList', () => {
       />,
     )
 
-    const semester1List = getByRole('listbox', { name: 'Semester 1' })
+    const semester1List = getByRole('listbox', { name: 'Semester 1 (6 credits)' })
     fireEvent.keyDown(semester1List, { key: 'ArrowUp' })
 
     expect(onCourseSelect).toHaveBeenCalledWith('C1')
@@ -148,7 +148,7 @@ describe('CurriculumList', () => {
       />,
     )
 
-    const semester1List = getByRole('listbox', { name: 'Semester 1' })
+    const semester1List = getByRole('listbox', { name: 'Semester 1 (6 credits)' })
     fireEvent.keyDown(semester1List, { key: 'ArrowRight', shiftKey: true })
 
     expect(onCourseMoveBySemester).toHaveBeenCalledWith('C1', 'next')
@@ -171,7 +171,7 @@ describe('CurriculumList', () => {
       />,
     )
 
-    const semester1List = getByRole('listbox', { name: 'Semester 1' })
+    const semester1List = getByRole('listbox', { name: 'Semester 1 (6 credits)' })
     fireEvent.keyDown(semester1List, { key: 'ArrowLeft', shiftKey: true })
 
     expect(onCourseMoveBySemester).toHaveBeenCalledWith('C2', 'previous')
@@ -194,7 +194,7 @@ describe('CurriculumList', () => {
       />,
     )
 
-    const semester2List = getByRole('listbox', { name: 'Semester 2' })
+    const semester2List = getByRole('listbox', { name: 'Semester 2 (3 credits)' })
     fireEvent.focus(semester2List)
     expect(onSemesterFocus).toHaveBeenCalledWith('s2')
 
@@ -231,5 +231,61 @@ describe('CurriculumList', () => {
     )
 
     expect(document.activeElement).toBe(getByText('C2'))
+  })
+
+  it('includes credit totals in aria-label and respects new_semester overrides', () => {
+    const semesters: Semester[] = [
+      { id: 's1', name: 'Semester 1', order: 1 },
+      { id: 's2', name: 'Semester 2', order: 2 },
+    ]
+
+    const courses: Course[] = [
+      {
+        id: 'C1',
+        name: 'Course 1',
+        credits: 3,
+        prerequisiteIds: [],
+        corequisiteIds: [],
+        semesterId: 's1',
+      },
+      {
+        id: 'C2',
+        name: 'Course 2',
+        credits: 3,
+        prerequisiteIds: [],
+        corequisiteIds: [],
+        semesterId: 's1',
+      },
+      {
+        id: 'C3',
+        name: 'Course 3',
+        credits: 4,
+        prerequisiteIds: [],
+        corequisiteIds: [],
+        semesterId: 's2',
+        new_semester: 's1',
+      },
+    ]
+
+    const curriculum: Curriculum = {
+      curriculumId: 'curr-1',
+      name: 'Test Curriculum',
+      totalCredits: 10,
+      semesters,
+      courses,
+    }
+
+    const { getByRole } = render(
+      <CurriculumList
+        curriculum={curriculum}
+        selectedCourseId={null}
+        onCourseSelect={vi.fn()}
+        onCourseMoveBySemester={vi.fn()}
+        onSemesterFocus={vi.fn()}
+      />,
+    )
+
+    getByRole('listbox', { name: 'Semester 1 (10 credits)' })
+    getByRole('listbox', { name: 'Semester 2 (0 credits)' })
   })
 })

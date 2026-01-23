@@ -350,6 +350,18 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       columnMap[sem.id] = i * 300
     })
 
+    const creditsBySemesterId: Record<string, number> = {}
+    for (const sem of semestersSorted) {
+      creditsBySemesterId[sem.id] = 0
+    }
+    for (const course of curriculum.courses) {
+      const effectiveSemesterId = getEffectiveSemesterId(course)
+      if (creditsBySemesterId[effectiveSemesterId] == null) {
+        creditsBySemesterId[effectiveSemesterId] = 0
+      }
+      creditsBySemesterId[effectiveSemesterId] += course.credits
+    }
+
     const trackInfo = getCurriculumTrackInfo(curriculum)
     const trackOrder = trackInfo.trackOrder
     const trackLaneIndex: Record<string, number> = {}
@@ -366,7 +378,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       elements.push({
         data: {
           id: `semester:${sem.id}`,
-          label: sem.name,
+          label: `${sem.name}\n${creditsBySemesterId[sem.id] ?? 0} credits`,
           semester: sem.id,
           type: 'semester-header',
         },
@@ -472,7 +484,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
             'text-halign': 'center',
             'font-size': '24px',
             width: 220,
-            height: 40,
+            height: 60,
           },
         },
         {
