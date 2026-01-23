@@ -1,8 +1,11 @@
 import { fireEvent, render, waitFor } from '@testing-library/preact'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const originalFileReader = globalThis.FileReader
 
 const curriculumViewMocks = vi.hoisted(() => {
   return {
+    lastCurriculum: null as unknown,
     panBy: vi.fn<(dx: number, dy: number) => void>(),
     resetViewport: vi.fn<() => void>(),
     zoomBy: vi.fn<(delta: number) => void>(),
@@ -13,12 +16,19 @@ vi.mock('../components/CurriculumView', () => {
   return {
     __mocks: curriculumViewMocks,
     CurriculumView: (props: {
+      curriculum: unknown
       onCourseMoved?: (courseId: string, newSemesterId: string) => void
       onRegisterResetViewport?: (reset: (() => void) | null) => void
       onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
       onRegisterZoomBy?: (zoomBy: ((delta: number) => void) | null) => void
     }) => (
       <div>
+        <div data-testid="curriculum-prop">
+          {(() => {
+            curriculumViewMocks.lastCurriculum = props.curriculum
+            return 'ok'
+          })()}
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -36,7 +46,13 @@ vi.mock('../components/CurriculumView', () => {
 })
 
 describe('CurriculumApp', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    ;(globalThis as unknown as { FileReader: typeof FileReader }).FileReader = originalFileReader
+  })
+
   beforeEach(() => {
+    curriculumViewMocks.lastCurriculum = null
     curriculumViewMocks.panBy.mockClear()
     curriculumViewMocks.resetViewport.mockClear()
     curriculumViewMocks.zoomBy.mockClear()
@@ -66,12 +82,12 @@ describe('CurriculumApp', () => {
   it('defaults the Save prompt filename to the last loaded filename (Load BSME)', async () => {
     const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('bs-me.json')
 
-    const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
-    const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
 
     const curriculumJson = buildCurriculumJson()
 
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(curriculumJson, {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -98,15 +114,10 @@ describe('CurriculumApp', () => {
     fireEvent.click(saveButton)
 
     expect(promptSpy).toHaveBeenCalledWith('Save curriculum as:', 'bs-me.json')
-
-    fetchSpy.mockRestore()
-    promptSpy.mockRestore()
-    createObjectURLSpy.mockRestore()
-    revokeObjectURLSpy.mockRestore()
   })
 
   it('disables Save until a course has been moved', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(buildCurriculumJson(), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -127,12 +138,10 @@ describe('CurriculumApp', () => {
     await waitFor(() => {
       expect(getByRole('button', { name: 'Save' })).toBeEnabled()
     })
-
-    fetchSpy.mockRestore()
   })
 
   it('cancels save when prompt is dismissed', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(buildCurriculumJson(), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -160,28 +169,22 @@ describe('CurriculumApp', () => {
     expect(promptSpy).toHaveBeenCalledWith('Save curriculum as:', 'bs-me.json')
     expect(createObjectURLSpy).not.toHaveBeenCalled()
     expect(getByText('Save canceled.')).toBeInTheDocument()
-
-    fetchSpy.mockRestore()
-    promptSpy.mockRestore()
-    createObjectURLSpy.mockRestore()
   })
 
   it('sanitizes the requested save filename and appends .json when missing', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(buildCurriculumJson(), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
     )
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('foo/bar')
-    const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
-    const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    vi.spyOn(window, 'prompt').mockReturnValue('foo/bar')
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
 
     const originalCreateElement = document.createElement.bind(document)
     let lastAnchor: Element | null = null
-    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((
-      tagName: string,
-    ) => {
+    vi.spyOn(document, 'createElement').mockImplementation(((tagName: string) => {
       const el = originalCreateElement(tagName) as HTMLElement
       if (tagName.toLowerCase() === 'a') {
         lastAnchor = el
@@ -210,17 +213,60 @@ describe('CurriculumApp', () => {
       throw new Error('Expected a download anchor element to be created')
     }
     expect((anchor as HTMLAnchorElement).getAttribute('download')).toBe('foo-bar.json')
+  })
 
-    fetchSpy.mockRestore()
-    promptSpy.mockRestore()
-    createObjectURLSpy.mockRestore()
-    revokeObjectURLSpy.mockRestore()
-    createElementSpy.mockRestore()
+  it('disables Add Semester until a curriculum is loaded', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(buildCurriculumJson(), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const { CurriculumApp } = await import('../components/CurriculumApp')
+    const { getByRole, getByText } = render(<CurriculumApp />)
+
+    expect(getByRole('button', { name: 'Add Semester' })).toBeDisabled()
+
+    fireEvent.click(getByRole('button', { name: 'Load BSME' }))
+    await waitFor(() => {
+      expect(getByText('Loaded bs-me.json.')).toBeInTheDocument()
+    })
+
+    expect(getByRole('button', { name: 'Add Semester' })).toBeEnabled()
+  })
+
+  it('adds a new semester after existing semesters when Add Semester is confirmed', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(buildCurriculumJson(), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('Semester 2')
+
+    const { CurriculumApp } = await import('../components/CurriculumApp')
+    const { getByRole, getByText } = render(<CurriculumApp />)
+
+    fireEvent.click(getByRole('button', { name: 'Load BSME' }))
+    await waitFor(() => {
+      expect(getByText('Loaded bs-me.json.')).toBeInTheDocument()
+    })
+
+    fireEvent.click(getByRole('button', { name: 'Add Semester' }))
+
+    expect(promptSpy).toHaveBeenCalledWith('New semester name:')
+
+    await waitFor(() => {
+      const last = curriculumViewMocks.lastCurriculum as {
+        semesters?: Array<{ id: string; name: string; order: number }>
+      }
+      expect(last.semesters?.[1]).toEqual({ id: 'semester-2', name: 'Semester 2', order: 2 })
+    })
   })
 
   it('defaults Save prompt filename to the filename loaded via file input', async () => {
-    const originalFileReader = globalThis.FileReader
-
     class MockFileReader {
       result: string | ArrayBuffer | null = null
       onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null = null
@@ -243,8 +289,8 @@ describe('CurriculumApp', () => {
     globalWithFileReader.FileReader = MockFileReader as unknown as typeof FileReader
 
     const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('my-upload.json')
-    const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
-    const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
 
     const { CurriculumApp } = await import('../components/CurriculumApp')
     const { container, getByRole, getByText } = render(<CurriculumApp />)
@@ -266,11 +312,6 @@ describe('CurriculumApp', () => {
 
     fireEvent.click(saveButton)
     expect(promptSpy).toHaveBeenCalledWith('Save curriculum as:', 'my-upload.json')
-
-    promptSpy.mockRestore()
-    createObjectURLSpy.mockRestore()
-    revokeObjectURLSpy.mockRestore()
-    globalThis.FileReader = originalFileReader
   })
 
   it('returns focus to the help button when the dialog is closed', async () => {
@@ -293,7 +334,7 @@ describe('CurriculumApp', () => {
   })
 
   it('wires pan controls to CurriculumView onRegisterPanBy', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(buildCurriculumJson(), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -321,12 +362,10 @@ describe('CurriculumApp', () => {
 
     fireEvent.click(getByRole('button', { name: 'Pan down' }))
     expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(0, -80)
-
-    fetchSpy.mockRestore()
   })
 
   it('wires Reset button to CurriculumView onRegisterResetViewport', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(buildCurriculumJson(), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -345,12 +384,10 @@ describe('CurriculumApp', () => {
     fireEvent.click(getByRole('button', { name: 'Reset' }))
 
     expect(curriculumViewMocks.resetViewport).toHaveBeenCalledTimes(1)
-
-    fetchSpy.mockRestore()
   })
 
   it('wires zoom controls to CurriculumView onRegisterZoomBy', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(buildCurriculumJson(), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -372,7 +409,5 @@ describe('CurriculumApp', () => {
 
     fireEvent.click(getByRole('button', { name: '-' }))
     expect(curriculumViewMocks.zoomBy).toHaveBeenCalledWith(-0.1)
-
-    fetchSpy.mockRestore()
   })
 })

@@ -1,5 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/preact'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Curriculum } from '../components/CurriculumGraph'
 
 vi.mock('../components/CurriculumGraph', () => {
@@ -28,6 +28,10 @@ vi.mock('../components/CurriculumList', () => {
 })
 
 describe('CurriculumView', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   function buildCurriculumFixture(): Curriculum {
     return {
       curriculumId: 'curr-1',
@@ -78,8 +82,6 @@ describe('CurriculumView', () => {
       const region = document.getElementById('screenreader-alert')
       expect(region?.textContent).toContain('Course Course 1 moved to semester Semester 2')
     })
-
-    vi.useRealTimers()
   })
 
   it('does not move a course to the previous semester when it is already in the first semester', async () => {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import type { Course, Curriculum } from './CurriculumGraph'
+import type { Course, Curriculum, Semester } from './CurriculumGraph'
 import { CurriculumView } from './CurriculumView'
 import { HelpDialog } from './HelpDialog'
 
@@ -169,6 +169,55 @@ export function CurriculumApp() {
     ;(document.querySelector('button.help-button') as HTMLButtonElement)?.focus()
   }, [])
 
+  const handleAddSemester = useCallback(() => {
+    if (!curriculum) {
+      setStatus('No curriculum loaded.', true)
+      return
+    }
+
+    const requestedName = window.prompt('New semester name:')
+    if (requestedName == null) {
+      setStatus('Add semester canceled.')
+      return
+    }
+
+    const name = requestedName.trim()
+    if (name.length === 0) {
+      setStatus('Semester name is required.', true)
+      return
+    }
+
+    const slugBase = name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+
+    setCurriculum((prev) => {
+      if (!prev) return prev
+
+      const semesters = [...(prev.semesters || [])]
+      const maxOrder = semesters.reduce((max, s) => Math.max(max, s.order), 0)
+      const nextOrder = maxOrder + 1
+
+      const existingIds = new Set(semesters.map((s) => s.id))
+      const baseId = slugBase.length > 0 ? slugBase : `semester-${nextOrder}`
+      let id = baseId
+      let suffix = 2
+      while (existingIds.has(id)) {
+        id = `${baseId}-${suffix}`
+        suffix += 1
+      }
+
+      const newSemester: Semester = { id, name, order: nextOrder }
+      const updated = { ...prev, semesters: [...semesters, newSemester] }
+      return updated
+    })
+
+    setStatus(`Added semester: ${name}`)
+  }, [curriculum, setStatus])
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' || event.key === 'Esc') {
@@ -234,6 +283,12 @@ export function CurriculumApp() {
               title="Save curriculum"
             >
               Save
+            </button>
+          </div>
+
+          <div className="data-controls">
+            <button type="button" onClick={handleAddSemester} disabled={!curriculum}>
+              Add Semester
             </button>
           </div>
 
