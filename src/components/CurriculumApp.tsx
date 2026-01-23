@@ -216,9 +216,14 @@ export function CurriculumApp() {
               type="button"
               onClick={() => loadCurriculumFromPath('bs-me.json')}
               title="Load sample curriculum"
+              aria-describedby="sample-curriculum-description"
             >
               Load BSME
             </button>
+            <span id="sample-curriculum-description" className="sr-only">
+              Loads a sample curriculum which is the '25-'26 Montana State University B.S. in
+              Mechanical Engineering curriculum
+            </span>
             <button
               type="button"
               onClick={handleSave}

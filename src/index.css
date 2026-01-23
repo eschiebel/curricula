@@ -17,6 +17,12 @@ body *:focus-visible {
   top: -9999px;
 }
 
+.sr-only {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;
