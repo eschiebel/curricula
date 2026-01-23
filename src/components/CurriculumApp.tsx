@@ -241,6 +241,17 @@ export function CurriculumApp() {
             className="top-bar-logo"
           />
           <h1>Curriculum Visualizer</h1>
+          <button
+            className="help-button"
+            type="button"
+            onClick={() => setHelpDialogOpen((prev) => !prev)}
+            aria-expanded={helpDialogOpen}
+            aria-controls="help-dialog"
+            aria-label="Help"
+            title="Help"
+          >
+            ?
+          </button>
         </div>
         <div className="controls">
           <div className="file-controls">
@@ -297,7 +308,7 @@ export function CurriculumApp() {
               <button
                 type="button"
                 className="secondary pan-button pan-up"
-                onClick={() => panByRef.current?.(0, panStep)}
+                onClick={() => panByRef.current?.(0, -panStep)}
                 title="Pan up"
                 aria-label="Pan up"
               >
@@ -306,7 +317,7 @@ export function CurriculumApp() {
               <button
                 type="button"
                 className="secondary pan-button pan-left"
-                onClick={() => panByRef.current?.(panStep, 0)}
+                onClick={() => panByRef.current?.(-panStep, 0)}
                 title="Pan left"
                 aria-label="Pan left"
               >
@@ -315,7 +326,7 @@ export function CurriculumApp() {
               <button
                 type="button"
                 className="secondary pan-button pan-right"
-                onClick={() => panByRef.current?.(-panStep, 0)}
+                onClick={() => panByRef.current?.(panStep, 0)}
                 title="Pan right"
                 aria-label="Pan right"
               >
@@ -324,7 +335,7 @@ export function CurriculumApp() {
               <button
                 type="button"
                 className="secondary pan-button pan-down"
-                onClick={() => panByRef.current?.(0, -panStep)}
+                onClick={() => panByRef.current?.(0, panStep)}
                 title="Pan down"
                 aria-label="Pan down"
               >
@@ -342,17 +353,6 @@ export function CurriculumApp() {
                 Reset
               </button>
             </fieldset>
-            <button
-              className="help-button"
-              type="button"
-              onClick={() => setHelpDialogOpen((prev) => !prev)}
-              aria-expanded={helpDialogOpen}
-              aria-controls="help-dialog"
-              aria-label="Help"
-              title="Help"
-            >
-              ?
-            </button>
           </div>
         </div>
         <HelpDialog curriculum={curriculum} open={helpDialogOpen} onClose={handleCloseDialog} />

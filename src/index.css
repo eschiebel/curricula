@@ -69,10 +69,15 @@ body *:focus-visible {
     gap: 8px;
   }
 
+  .data-controls {
+    margin: auto;
+  }
+
   .zoom-and-pan-controls {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-left: auto;
   }
 }
 
@@ -304,6 +309,10 @@ li.course-selected {
       }
     }
   }
+}
+
+.help-button {
+  border-radius: 50%;
 }
 
 .help-dialog {
