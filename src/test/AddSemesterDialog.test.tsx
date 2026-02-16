@@ -54,7 +54,9 @@ describe('AddSemesterDialog', () => {
       <AddSemesterDialog semesters={buildSemesters()} open onClose={onClose} onSave={onSave} />,
     )
 
-    const handle = getByRole('button', { name: 'Drag to set semester position' })
+    const handle = getByRole('button', {
+      name: 'Drag or use up/down arrow keys to set semester position',
+    })
     handle.focus()
 
     const getMeaningfulItems = () =>
@@ -85,7 +87,9 @@ describe('AddSemesterDialog', () => {
       <AddSemesterDialog semesters={buildSemesters()} open onClose={onClose} onSave={onSave} />,
     )
 
-    const handle = getByRole('button', { name: 'Drag to set semester position' })
+    const handle = getByRole('button', {
+      name: 'Drag or use up/down arrow keys to set semester position',
+    })
 
     // Start drag to set dragActive and set dataTransfer
     const dataTransfer = {

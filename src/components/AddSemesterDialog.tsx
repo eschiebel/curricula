@@ -16,6 +16,7 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
 
   const nameInputRef = useRef<HTMLInputElement>(null)
   const dragHandleRef = useRef<HTMLButtonElement>(null)
+  const dragImageRef = useRef<HTMLDivElement | null>(null)
   const [name, setName] = useState<string>('')
   const [dragActive, setDragActive] = useState<boolean>(false)
 
@@ -43,6 +44,13 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
       event.dataTransfer?.setData('application/x-curricula-drag-item', 'new-semester')
       if (event.dataTransfer) {
         event.dataTransfer.effectAllowed = 'move'
+
+        const setDragImage = (event.dataTransfer as DataTransfer).setDragImage
+        if (typeof setDragImage === 'function' && typeof document !== 'undefined') {
+          const img = new Image()
+          img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+          event.dataTransfer.setDragImage(img, 0, 0)
+        }
       }
     } catch {
       // ignore
@@ -74,12 +82,22 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
       if (id !== 'new-semester') return
       setInsertionIndex(Math.min(Math.max(0, index), semestersSorted.length))
       setDragActive(false)
+
+      if (dragImageRef.current) {
+        dragImageRef.current.remove()
+        dragImageRef.current = null
+      }
     },
     [semestersSorted.length],
   )
 
   const handleDragEnd = useCallback(() => {
     setDragActive(false)
+
+    if (dragImageRef.current) {
+      dragImageRef.current.remove()
+      dragImageRef.current = null
+    }
   }, [])
 
   const handleSave = useCallback(() => {
@@ -135,8 +153,8 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
           className="add-semester-dialog-drag-handle"
           draggable={false}
           onKeyDown={handleDragHandleKeyDown}
-          aria-label="Drag to set semester position"
-          title="Drag to set position"
+          aria-label="Drag or use up/down arrow keys to set semester position"
+          title="Drag or use up/down arrow keys to set semesterposition"
         >
           ≡
         </button>
