@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import type { Course, Curriculum, Semester } from './CurriculumGraph'
 import { CurriculumView } from './CurriculumView'
+import { AddSemesterDialog } from './AddSemesterDialog'
 import { HelpDialog } from './HelpDialog'
 
 export function CurriculumApp() {
   const resetViewportRef = useRef<(() => void) | null>(null)
   const panByRef = useRef<((dx: number, dy: number) => void) | null>(null)
   const zoomByRef = useRef<((delta: number) => void) | null>(null)
+  const addSemesterButtonRef = useRef<HTMLButtonElement>(null)
   const [status, setStatusState] = useState<string>('No file loaded.')
   const [statusError, setStatusError] = useState<boolean>(false)
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null)
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
   const [movedCourseIds, setMovedCourseIds] = useState<string[]>([])
   const [helpDialogOpen, setHelpDialogOpen] = useState<boolean>(false)
+  const [addSemesterDialogOpen, setAddSemesterDialogOpen] = useState<boolean>(false)
 
   const setStatus = useCallback((text: string, isError = false) => {
     setStatusState(text)
@@ -174,49 +177,58 @@ export function CurriculumApp() {
       setStatus('No curriculum loaded.', true)
       return
     }
+    setAddSemesterDialogOpen(true)
+  }, [curriculum, setStatus])
 
-    const requestedName = window.prompt('New semester name:')
-    if (requestedName == null) {
-      setStatus('Add semester canceled.')
-      return
-    }
+  const handleCloseAddSemesterDialog = useCallback(() => {
+    setAddSemesterDialogOpen(false)
+    addSemesterButtonRef.current?.focus()
+  }, [])
 
-    const name = requestedName.trim()
-    if (name.length === 0) {
-      setStatus('Semester name is required.', true)
-      return
-    }
+  const handleSaveAddSemesterDialog = useCallback(
+    (args: { name: string; insertionIndex: number }) => {
+      const { name, insertionIndex } = args
 
-    const slugBase = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-
-    setCurriculum((prev) => {
-      if (!prev) return prev
-
-      const semesters = [...(prev.semesters || [])]
-      const maxOrder = semesters.reduce((max, s) => Math.max(max, s.order), 0)
-      const nextOrder = maxOrder + 1
-
-      const existingIds = new Set(semesters.map((s) => s.id))
-      const baseId = slugBase.length > 0 ? slugBase : `semester-${nextOrder}`
-      let id = baseId
-      let suffix = 2
-      while (existingIds.has(id)) {
-        id = `${baseId}-${suffix}`
-        suffix += 1
+      if (!curriculum) {
+        setStatus('No curriculum loaded.', true)
+        return
       }
 
-      const newSemester: Semester = { id, name, order: nextOrder }
-      const updated = { ...prev, semesters: [...semesters, newSemester] }
-      return updated
-    })
+      const slugBase = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
 
-    setStatus(`Added semester: ${name}`)
-  }, [curriculum, setStatus])
+      setCurriculum((prev) => {
+        if (!prev) return prev
+
+        const semestersSorted = [...(prev.semesters || [])].sort((a, b) => a.order - b.order)
+        const existingIds = new Set(semestersSorted.map((s) => s.id))
+        const baseId = slugBase.length > 0 ? slugBase : `semester-${semestersSorted.length + 1}`
+        let id = baseId
+        let suffix = 2
+        while (existingIds.has(id)) {
+          id = `${baseId}-${suffix}`
+          suffix += 1
+        }
+
+        const index = Math.min(Math.max(0, insertionIndex), semestersSorted.length)
+        const newSemester: Semester = { id, name, order: 0 }
+        const withInsert = [...semestersSorted]
+        withInsert.splice(index, 0, newSemester)
+
+        const normalized = withInsert.map((s, i) => ({ ...s, order: i + 1 }))
+        return { ...prev, semesters: normalized }
+      })
+
+      setAddSemesterDialogOpen(false)
+      addSemesterButtonRef.current?.focus()
+      setStatus(`Added semester: ${name}`)
+    },
+    [curriculum, setStatus],
+  )
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -298,7 +310,12 @@ export function CurriculumApp() {
           </div>
 
           <div className="data-controls">
-            <button type="button" onClick={handleAddSemester} disabled={!curriculum}>
+            <button
+              ref={addSemesterButtonRef}
+              type="button"
+              onClick={handleAddSemester}
+              disabled={!curriculum}
+            >
               Add Semester
             </button>
           </div>
@@ -356,6 +373,12 @@ export function CurriculumApp() {
           </div>
         </div>
         <HelpDialog curriculum={curriculum} open={helpDialogOpen} onClose={handleCloseDialog} />
+        <AddSemesterDialog
+          semesters={curriculum?.semesters || []}
+          open={addSemesterDialogOpen}
+          onClose={handleCloseAddSemesterDialog}
+          onSave={handleSaveAddSemesterDialog}
+        />
       </div>
       <div className="graph-container">
         {curriculum && (

@@ -139,7 +139,7 @@ export function HelpDialog(props: HelpDialogProps) {
               strokeWidth="3"
             >
               <title>arrow with dotted line</title>
-              <line x1="0" y1="10" x2="90" y2="10" strokeDasharray="4,4" />
+              <line x1="0" y1="10" x2="90" y2="10" stroke-dasharray="4 4" />
               <polygon points="90,5 100,10 90,15" />
             </svg>
             Corequisite

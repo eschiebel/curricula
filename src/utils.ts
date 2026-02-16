@@ -1,4 +1,5 @@
 const showScreenreaderAlert = (message: string) => {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return
   const liveRegion = document.getElementById('screenreader-alert')
   if (!liveRegion) return
 
@@ -9,6 +10,7 @@ const showScreenreaderAlert = (message: string) => {
 
   // Defer setting the message to the next tick so AT sees a new node
   window.setTimeout(() => {
+    if (typeof document === 'undefined') return
     const msgNode = document.createElement('div')
     msgNode.textContent = message
     liveRegion.appendChild(msgNode)

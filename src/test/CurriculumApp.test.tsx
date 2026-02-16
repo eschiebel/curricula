@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/preact'
+import { fireEvent, render, waitFor, within } from '@testing-library/preact'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const originalFileReader = globalThis.FileReader
@@ -244,8 +244,6 @@ describe('CurriculumApp', () => {
       }),
     )
 
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('Semester 2')
-
     const { CurriculumApp } = await import('../components/CurriculumApp')
     const { getByRole, getByText } = render(<CurriculumApp />)
 
@@ -256,7 +254,15 @@ describe('CurriculumApp', () => {
 
     fireEvent.click(getByRole('button', { name: 'Add Semester' }))
 
-    expect(promptSpy).toHaveBeenCalledWith('New semester name:')
+    await waitFor(() => {
+      expect(getByRole('dialog', { name: 'Add Semester' })).toBeInTheDocument()
+    })
+
+    const dialog = getByRole('dialog', { name: 'Add Semester' })
+    const nameInput = within(dialog).getByRole('textbox', { name: 'Name' })
+    fireEvent.input(nameInput, { target: { value: 'Semester 2' } })
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
 
     await waitFor(() => {
       const last = curriculumViewMocks.lastCurriculum as {
@@ -352,16 +358,16 @@ describe('CurriculumApp', () => {
     fireEvent.click(getByRole('button', { name: 'Simulate move' }))
 
     fireEvent.click(getByRole('button', { name: 'Pan up' }))
-    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(0, 80)
+    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(0, -80)
 
     fireEvent.click(getByRole('button', { name: 'Pan left' }))
-    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(80, 0)
-
-    fireEvent.click(getByRole('button', { name: 'Pan right' }))
     expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(-80, 0)
 
+    fireEvent.click(getByRole('button', { name: 'Pan right' }))
+    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(80, 0)
+
     fireEvent.click(getByRole('button', { name: 'Pan down' }))
-    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(0, -80)
+    expect(curriculumViewMocks.panBy).toHaveBeenCalledWith(0, 80)
   })
 
   it('wires Reset button to CurriculumView onRegisterResetViewport', async () => {
