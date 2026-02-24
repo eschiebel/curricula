@@ -5,7 +5,7 @@ import type { Curriculum, Semester, Course } from './CurriculumGraph'
 export interface CurriculumListProps {
   curriculum: Curriculum
   selectedCourseId: string | null
-  onCourseSelect: (courseId: string) => void
+  onCourseSelect: (courseId: string | null) => void
   onCourseMoveBySemester: (courseId: string, direction: 'previous' | 'next') => void
   onSemesterFocus: (semesterId: string | null) => void
 }

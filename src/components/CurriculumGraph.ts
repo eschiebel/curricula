@@ -43,7 +43,7 @@ export interface RenderOptions {
   movedCourseIds?: string[]
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
   selectedCourseId?: string | null
-  onCourseSelect: (courseId: string) => void
+  onCourseSelect: (courseId: string | null) => void
   onCourseMoveBySemester?: (courseId: string, direction: 'previous' | 'next') => void
   focusedSemesterId?: string | null
   onRegisterResetViewport?: (reset: (() => void) | null) => void
@@ -523,6 +523,13 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           },
         },
         {
+          selector: 'node.selected-course-relation-node',
+          style: {
+            'border-color': '#e67e22',
+            'border-width': 3,
+          },
+        },
+        {
           selector: 'edge',
           style: {
             width: 2,
@@ -545,6 +552,12 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
             'segment-weights': 0.5,
             'target-arrow-color': '#2c3e50',
             'target-arrow-shape': 'triangle',
+          },
+        },
+        {
+          selector: 'edge.selected-course-relation',
+          style: {
+            width: 5,
           },
         },
         {
@@ -616,6 +629,21 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     }
 
     if (onCourseSelect) {
+      cy.on('grab', 'node', (event) => {
+        const node = event.target
+        const data = node.data()
+        if (!data || data.type === 'semester-header') return
+
+        const courseId: string = data.id
+
+        cy.batch(() => {
+          cy.$('node').unselect()
+          node.select()
+        })
+
+        onCourseSelect(courseId)
+      })
+
       cy.on('tap', 'node', (event) => {
         const node = event.target
         const data = node.data()
@@ -629,6 +657,18 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
         })
 
         onCourseSelect(courseId)
+      })
+
+      cy.on('tap', (event) => {
+        if (event.target !== cy) return
+
+        cy.batch(() => {
+          cy.$('node').unselect()
+          cy.$('node').removeClass('selected-course-relation-node')
+          cy.$('edge').removeClass('selected-course-relation')
+        })
+
+        onCourseSelect(null)
       })
     }
 
@@ -646,11 +686,20 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
 
     cy.batch(() => {
       cy.$('node').unselect()
+      cy.$('node').removeClass('selected-course-relation-node')
+      cy.$('edge').removeClass('selected-course-relation')
       if (!selectedCourseId) return
       const node = cy.$(`node[id = "${selectedCourseId}"]`)
       if (node.length > 0) {
         node.select()
       }
+
+      const relatedEdges = cy.$(`edge[target = "${selectedCourseId}"]`)
+      relatedEdges.addClass('selected-course-relation')
+      relatedEdges
+        .sources()
+        .filter('node[type != "semester-header"]')
+        .addClass('selected-course-relation-node')
     })
   }, [selectedCourseId, curriculum])
 
