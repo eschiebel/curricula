@@ -15,6 +15,7 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
   const { semesters, open, onClose, onSave } = props
 
   const nameInputRef = useRef<HTMLInputElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
   const dragHandleRef = useRef<HTMLButtonElement>(null)
   const dragImageRef = useRef<HTMLDivElement | null>(null)
   const [name, setName] = useState<string>('')
@@ -34,8 +35,24 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
 
   useEffect(() => {
     if (!open) return
-    nameInputRef.current?.focus()
+    closeButtonRef.current?.focus()
   }, [open])
+
+  useEffect(() => {
+    if (!open) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' || event.key === 'Esc') {
+        event.preventDefault()
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, onClose])
 
   const handleDragStart = useCallback((event: JSX.TargetedDragEvent<HTMLElement>) => {
     event.stopPropagation()
@@ -197,7 +214,13 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
     <div className="add-semester-dialog" role="dialog" aria-label="Add Semester">
       <div className="add-semester-dialog-header">
         <h2 className="add-semester-dialog-title">Add Semester</h2>
-        <button type="button" className="close-button" onClick={onClose} aria-label="Close">
+        <button
+          ref={closeButtonRef}
+          type="button"
+          className="close-button"
+          onClick={onClose}
+          aria-label="Close"
+        >
           X
         </button>
       </div>

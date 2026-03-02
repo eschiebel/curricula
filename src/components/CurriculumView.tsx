@@ -8,6 +8,8 @@ export interface CurriculumViewProps {
   curriculum: Curriculum
   setStatus: StatusSetter
   movedCourseIds?: string[]
+  selectedCourseId?: string | null
+  onCourseSelect?: (courseId: string | null) => void
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
   onRegisterResetViewport?: (reset: (() => void) | null) => void
   onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
@@ -19,14 +21,19 @@ export function CurriculumView(props: CurriculumViewProps) {
     curriculum,
     setStatus,
     movedCourseIds,
+    selectedCourseId: externalSelectedCourseId,
+    onCourseSelect: externalOnCourseSelect,
     onCourseMoved,
     onRegisterResetViewport,
     onRegisterPanBy,
     onRegisterZoomBy,
   } = props
 
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
+  const [internalSelectedCourseId, setInternalSelectedCourseId] = useState<string | null>(null)
   const [focusedSemesterId, setFocusedSemesterId] = useState<string | null>(null)
+
+  const selectedCourseId = externalSelectedCourseId ?? internalSelectedCourseId
+  const setSelectedCourseId = externalOnCourseSelect ?? setInternalSelectedCourseId
 
   const handleCourseMoveBySemester = useCallback(
     (courseId: string, direction: 'previous' | 'next') => {

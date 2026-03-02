@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Course, Curriculum, Semester } from './CurriculumGraph'
+import { getCurriculumTrackInfo } from './CurriculumGraph'
 import { CurriculumView } from './CurriculumView'
 import { AddSemesterDialog } from './AddSemesterDialog'
+import { AddCourseDialog } from './AddCourseDialog'
 import { HelpDialog } from './HelpDialog'
 
 export function CurriculumApp() {
@@ -9,13 +11,21 @@ export function CurriculumApp() {
   const panByRef = useRef<((dx: number, dy: number) => void) | null>(null)
   const zoomByRef = useRef<((delta: number) => void) | null>(null)
   const addSemesterButtonRef = useRef<HTMLButtonElement>(null)
+  const addCourseButtonRef = useRef<HTMLButtonElement>(null)
   const [status, setStatusState] = useState<string>('No file loaded.')
   const [statusError, setStatusError] = useState<boolean>(false)
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null)
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
   const [movedCourseIds, setMovedCourseIds] = useState<string[]>([])
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false)
   const [helpDialogOpen, setHelpDialogOpen] = useState<boolean>(false)
   const [addSemesterDialogOpen, setAddSemesterDialogOpen] = useState<boolean>(false)
+  const [addCourseDialogOpen, setAddCourseDialogOpen] = useState<boolean>(false)
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
+
+  const trackInfo = useMemo(() => {
+    return curriculum ? getCurriculumTrackInfo(curriculum) : null
+  }, [curriculum])
 
   const setStatus = useCallback((text: string, isError = false) => {
     setStatusState(text)
@@ -45,6 +55,7 @@ export function CurriculumApp() {
         const updated = { ...prev, courses: updatedCourses }
         const movedIds = updatedCourses.filter((c) => c.new_semester != null).map((c) => c.id)
         setMovedCourseIds(movedIds)
+        setHasUnsavedChanges(true)
 
         return updated
       })
@@ -68,6 +79,7 @@ export function CurriculumApp() {
             .map((c) => String(c.id))
         : []
       setMovedCourseIds(movedIds)
+      setHasUnsavedChanges(false)
       setLoadedFileName(sourceDescription)
       setStatus(`Loaded ${sourceDescription}.`)
     } catch (err) {
@@ -160,6 +172,7 @@ export function CurriculumApp() {
       link.click()
       link.remove()
       URL.revokeObjectURL(url)
+      setHasUnsavedChanges(false)
       setStatus('Saved updated curriculum JSON.')
     } catch (err) {
       console.error('Failed to save curriculum', err)
@@ -225,7 +238,61 @@ export function CurriculumApp() {
 
       setAddSemesterDialogOpen(false)
       addSemesterButtonRef.current?.focus()
+      setHasUnsavedChanges(true)
       setStatus(`Added semester: ${name}`)
+    },
+    [curriculum, setStatus],
+  )
+
+  const handleAddCourse = useCallback(() => {
+    if (!curriculum) {
+      setStatus('No curriculum loaded.', true)
+      return
+    }
+    setAddCourseDialogOpen(true)
+  }, [curriculum, setStatus])
+
+  const handleCloseAddCourseDialog = useCallback(() => {
+    setAddCourseDialogOpen(false)
+    addCourseButtonRef.current?.focus()
+  }, [])
+
+  const handleSaveAddCourseDialog = useCallback(
+    (args: { courseId: string; credits: number; trackId: string; semesterId: string }) => {
+      const { courseId, credits, trackId, semesterId } = args
+
+      if (!curriculum) {
+        setStatus('No curriculum loaded.', true)
+        return
+      }
+
+      setCurriculum((prev) => {
+        if (!prev) return prev
+
+        const existingCourse = prev.courses.find((c) => c.id === courseId)
+        if (existingCourse) {
+          setStatus(`Course ${courseId} already exists.`, true)
+          return prev
+        }
+
+        const newCourse: Course = {
+          id: courseId,
+          name: courseId,
+          credits,
+          trackId,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId,
+        }
+
+        return { ...prev, courses: [...prev.courses, newCourse] }
+      })
+
+      setAddCourseDialogOpen(false)
+      addCourseButtonRef.current?.focus()
+      setHasUnsavedChanges(true)
+      setSelectedCourseId(courseId)
+      setStatus(`Added course: ${courseId}`)
     },
     [curriculum, setStatus],
   )
@@ -299,9 +366,9 @@ export function CurriculumApp() {
             <button
               type="button"
               onClick={handleSave}
-              disabled={movedCourseIds.length === 0}
+              disabled={!hasUnsavedChanges}
               style={{
-                cursor: movedCourseIds.length === 0 ? 'not-allowed' : 'pointer',
+                cursor: !hasUnsavedChanges ? 'not-allowed' : 'pointer',
               }}
               title="Save curriculum"
             >
@@ -317,6 +384,14 @@ export function CurriculumApp() {
               disabled={!curriculum}
             >
               Add Semester
+            </button>
+            <button
+              ref={addCourseButtonRef}
+              type="button"
+              onClick={handleAddCourse}
+              disabled={!curriculum}
+            >
+              Add Course
             </button>
           </div>
 
@@ -379,6 +454,13 @@ export function CurriculumApp() {
           onClose={handleCloseAddSemesterDialog}
           onSave={handleSaveAddSemesterDialog}
         />
+        <AddCourseDialog
+          semesters={curriculum?.semesters || []}
+          trackInfo={trackInfo}
+          open={addCourseDialogOpen}
+          onClose={handleCloseAddCourseDialog}
+          onSave={handleSaveAddCourseDialog}
+        />
       </div>
       <div className="graph-container">
         {curriculum && (
@@ -386,10 +468,18 @@ export function CurriculumApp() {
             curriculum={curriculum}
             setStatus={setStatus}
             movedCourseIds={movedCourseIds}
+            selectedCourseId={selectedCourseId}
+            onCourseSelect={setSelectedCourseId}
             onCourseMoved={handleCourseMoved}
-            onRegisterResetViewport={handleRegisterResetViewport}
-            onRegisterPanBy={handleRegisterPanBy}
-            onRegisterZoomBy={handleRegisterZoomBy}
+            onRegisterResetViewport={(reset) => {
+              resetViewportRef.current = reset
+            }}
+            onRegisterPanBy={(panBy) => {
+              panByRef.current = panBy
+            }}
+            onRegisterZoomBy={(zoomBy) => {
+              zoomByRef.current = zoomBy
+            }}
           />
         )}
       </div>
