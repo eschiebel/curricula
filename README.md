@@ -40,3 +40,7 @@ Then run
 ```
 npm run deploy
 ```
+
+## Feedback
+
+Edit the form at https://docs.google.com/forms/d/17MdVlxsRumy39EzPANMIuWdl4cg6Tu42ESV8C4REgFk/edit

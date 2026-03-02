@@ -83,6 +83,9 @@ export function HelpDialog(props: HelpDialogProps) {
           <li>Use the arrow buttons to pan.</li>
           <li>The Reset button resets zoom abnd pan.</li>
         </ul>
+        <a href="https://forms.gle/eC8UwsKTsQ7jmRao8" target="_blank" rel="noopener">
+          Feedback, Suggestions, Bugs, ...
+        </a>
       </div>
     )
   }
