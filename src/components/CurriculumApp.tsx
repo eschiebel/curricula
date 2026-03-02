@@ -471,15 +471,9 @@ export function CurriculumApp() {
             selectedCourseId={selectedCourseId}
             onCourseSelect={setSelectedCourseId}
             onCourseMoved={handleCourseMoved}
-            onRegisterResetViewport={(reset) => {
-              resetViewportRef.current = reset
-            }}
-            onRegisterPanBy={(panBy) => {
-              panByRef.current = panBy
-            }}
-            onRegisterZoomBy={(zoomBy) => {
-              zoomByRef.current = zoomBy
-            }}
+            onRegisterResetViewport={handleRegisterResetViewport}
+            onRegisterPanBy={handleRegisterPanBy}
+            onRegisterZoomBy={handleRegisterZoomBy}
           />
         )}
       </div>
