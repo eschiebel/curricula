@@ -46,7 +46,14 @@ describe('CourseDialog - Add Mode', () => {
     const onClose = vi.fn()
 
     const { container } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open={false} onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open={false}
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     expect(container.textContent).toBe('')
@@ -57,7 +64,14 @@ describe('CourseDialog - Add Mode', () => {
     const onClose = vi.fn()
 
     const { getByRole } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     expect(getByRole('dialog', { name: 'Add Course' })).toBeInTheDocument()
@@ -68,7 +82,14 @@ describe('CourseDialog - Add Mode', () => {
     const onClose = vi.fn()
 
     const { getByRole, getByLabelText } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     const saveButton = getByRole('button', { name: 'Save' })
@@ -88,7 +109,14 @@ describe('CourseDialog - Add Mode', () => {
     const onClose = vi.fn()
 
     const { getByRole, getByLabelText } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     const courseIdInput = getByLabelText(/Course ID/)
@@ -116,7 +144,14 @@ describe('CourseDialog - Add Mode', () => {
     const onClose = vi.fn()
 
     const { getByLabelText } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     const semesterSelect = getByLabelText(/Semester/) as HTMLSelectElement
@@ -132,7 +167,15 @@ describe('CourseDialog - Edit Mode', () => {
     const onClose = vi.fn()
 
     const { getByRole } = render(
-      <CourseDialog mode="edit" course={buildCourse()} semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="edit"
+        course={buildCourse()}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     expect(getByRole('dialog', { name: 'Edit Course' })).toBeInTheDocument()
@@ -144,7 +187,15 @@ describe('CourseDialog - Edit Mode', () => {
     const course = buildCourse()
 
     const { getByLabelText } = render(
-      <CourseDialog mode="edit" course={course} semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="edit"
+        course={course}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     const courseIdInput = getByLabelText(/Course ID/) as HTMLInputElement
@@ -164,7 +215,15 @@ describe('CourseDialog - Edit Mode', () => {
     const course = buildCourse()
 
     const { getByRole, getByLabelText } = render(
-      <CourseDialog mode="edit" course={course} semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="edit"
+        course={course}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     const courseIdInput = getByLabelText(/Course ID/)
@@ -186,7 +245,15 @@ describe('CourseDialog - Edit Mode', () => {
     const onClose = vi.fn()
 
     const { container } = render(
-      <CourseDialog mode="edit" course={null} semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="edit"
+        course={null}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     expect(container.textContent).toBe('')
@@ -199,7 +266,14 @@ describe('CourseDialog - Common Behavior', () => {
     const onClose = vi.fn()
 
     const { getByRole } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     fireEvent.click(getByRole('button', { name: 'Cancel' }))
@@ -212,7 +286,14 @@ describe('CourseDialog - Common Behavior', () => {
     const onClose = vi.fn()
 
     const { getByRole } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     fireEvent.click(getByRole('button', { name: 'Close' }))
@@ -224,7 +305,16 @@ describe('CourseDialog - Common Behavior', () => {
     const onSave = vi.fn()
     const onClose = vi.fn()
 
-    render(<CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />)
+    render(
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
 
     fireEvent.keyDown(window, { key: 'Escape' })
 
@@ -236,7 +326,14 @@ describe('CourseDialog - Common Behavior', () => {
     const onClose = vi.fn()
 
     const { getByRole } = render(
-      <CourseDialog mode="add" semesters={buildSemesters()} trackInfo={buildTrackInfo()} open onClose={onClose} onSave={onSave} />,
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
     )
 
     const closeButton = getByRole('button', { name: 'Close' })
