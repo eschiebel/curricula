@@ -416,4 +416,48 @@ describe('CurriculumApp', () => {
     fireEvent.click(getByRole('button', { name: '-' }))
     expect(curriculumViewMocks.zoomBy).toHaveBeenCalledWith(-0.1)
   })
+
+  it('ensures only one dialog is open at a time', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(buildCurriculumJson(), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    const { CurriculumApp } = await import('../components/CurriculumApp')
+    const { getByRole, getByText, queryByRole } = render(<CurriculumApp />)
+
+    fireEvent.click(getByRole('button', { name: 'Load BSME' }))
+    await waitFor(() => {
+      expect(getByText('Loaded bs-me.json.')).toBeInTheDocument()
+    })
+
+    // Open Help dialog
+    fireEvent.click(getByRole('button', { name: 'Help' }))
+    await waitFor(() => {
+      expect(getByRole('dialog', { name: 'Help' })).toBeInTheDocument()
+    })
+
+    // Open Add Semester dialog - should close Help dialog
+    fireEvent.click(getByRole('button', { name: 'Add Semester' }))
+    await waitFor(() => {
+      expect(getByRole('dialog', { name: 'Add Semester' })).toBeInTheDocument()
+      expect(queryByRole('dialog', { name: 'Help' })).toBeNull()
+    })
+
+    // Open Add Course dialog - should close Add Semester dialog
+    fireEvent.click(getByRole('button', { name: 'Add Course' }))
+    await waitFor(() => {
+      expect(getByRole('dialog', { name: 'Add Course' })).toBeInTheDocument()
+      expect(queryByRole('dialog', { name: 'Add Semester' })).toBeNull()
+    })
+
+    // Open Help dialog again - should close Add Course dialog
+    fireEvent.click(getByRole('button', { name: 'Help' }))
+    await waitFor(() => {
+      expect(getByRole('dialog', { name: 'Help' })).toBeInTheDocument()
+      expect(queryByRole('dialog', { name: 'Add Course' })).toBeNull()
+    })
+  })
 })

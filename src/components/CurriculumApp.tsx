@@ -192,6 +192,8 @@ export function CurriculumApp() {
       setStatus('No curriculum loaded.', true)
       return
     }
+    setHelpDialogOpen(false)
+    setCourseDialogOpen(false)
     setAddSemesterDialogOpen(true)
   }, [curriculum, setStatus])
 
@@ -251,6 +253,8 @@ export function CurriculumApp() {
       setStatus('No curriculum loaded.', true)
       return
     }
+    setHelpDialogOpen(false)
+    setAddSemesterDialogOpen(false)
     setCourseDialogMode('add')
     setEditingCourseId(null)
     setCourseDialogOpen(true)
@@ -266,6 +270,8 @@ export function CurriculumApp() {
         return
       }
 
+      setHelpDialogOpen(false)
+      setAddSemesterDialogOpen(false)
       setCourseDialogMode('edit')
       setEditingCourseId(courseId)
       setCourseDialogOpen(true)
@@ -396,7 +402,11 @@ export function CurriculumApp() {
           <button
             className="help-button"
             type="button"
-            onClick={() => setHelpDialogOpen((prev) => !prev)}
+            onClick={() => {
+              setAddSemesterDialogOpen(false)
+              setCourseDialogOpen(false)
+              setHelpDialogOpen((prev) => !prev)
+            }}
             aria-expanded={helpDialogOpen}
             aria-controls="help-dialog"
             aria-label="Help"
