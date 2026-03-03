@@ -3,7 +3,7 @@ import type { Course, Curriculum, Semester } from './CurriculumGraph'
 import { getCurriculumTrackInfo } from './CurriculumGraph'
 import { CurriculumView } from './CurriculumView'
 import { AddSemesterDialog } from './AddSemesterDialog'
-import { AddCourseDialog } from './AddCourseDialog'
+import { CourseDialog } from './CourseDialog'
 import { HelpDialog } from './HelpDialog'
 
 export function CurriculumApp() {
@@ -20,7 +20,9 @@ export function CurriculumApp() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false)
   const [helpDialogOpen, setHelpDialogOpen] = useState<boolean>(false)
   const [addSemesterDialogOpen, setAddSemesterDialogOpen] = useState<boolean>(false)
-  const [addCourseDialogOpen, setAddCourseDialogOpen] = useState<boolean>(false)
+  const [courseDialogOpen, setCourseDialogOpen] = useState<boolean>(false)
+  const [courseDialogMode, setCourseDialogMode] = useState<'add' | 'edit'>('add')
+  const [editingCourseId, setEditingCourseId] = useState<string | null>(null)
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
 
   const trackInfo = useMemo(() => {
@@ -249,50 +251,121 @@ export function CurriculumApp() {
       setStatus('No curriculum loaded.', true)
       return
     }
-    setAddCourseDialogOpen(true)
+    setCourseDialogMode('add')
+    setEditingCourseId(null)
+    setCourseDialogOpen(true)
   }, [curriculum, setStatus])
 
-  const handleCloseAddCourseDialog = useCallback(() => {
-    setAddCourseDialogOpen(false)
+  const handleEditCourse = useCallback(
+    (courseId: string) => {
+      if (!curriculum) return
+
+      const course = curriculum.courses.find((c) => c.id === courseId)
+      if (!course || !course.userAdded) {
+        setStatus('Only user-added courses can be edited.', true)
+        return
+      }
+
+      setCourseDialogMode('edit')
+      setEditingCourseId(courseId)
+      setCourseDialogOpen(true)
+    },
+    [curriculum, setStatus],
+  )
+
+  const handleCloseCourseDialog = useCallback(() => {
+    setCourseDialogOpen(false)
+    setEditingCourseId(null)
     addCourseButtonRef.current?.focus()
   }, [])
 
-  const handleSaveAddCourseDialog = useCallback(
-    (args: { courseId: string; credits: number; trackId: string; semesterId: string }) => {
-      const { courseId, credits, trackId, semesterId } = args
+  const handleSaveCourseDialog = useCallback(
+    (args: {
+      oldCourseId?: string
+      courseId: string
+      credits: number
+      trackId: string
+      semesterId: string
+    }) => {
+      const { oldCourseId, courseId, credits, trackId, semesterId } = args
 
       if (!curriculum) {
         setStatus('No curriculum loaded.', true)
         return
       }
 
-      setCurriculum((prev) => {
-        if (!prev) return prev
+      if (oldCourseId) {
+        // Edit mode
+        setCurriculum((prev) => {
+          if (!prev) return prev
 
-        const existingCourse = prev.courses.find((c) => c.id === courseId)
-        if (existingCourse) {
-          setStatus(`Course ${courseId} already exists.`, true)
-          return prev
-        }
+          const existingCourse = prev.courses.find((c) => c.id === oldCourseId)
+          if (!existingCourse) {
+            setStatus(`Course ${oldCourseId} not found.`, true)
+            return prev
+          }
 
-        const newCourse: Course = {
-          id: courseId,
-          name: courseId,
-          credits,
-          trackId,
-          prerequisiteIds: [],
-          corequisiteIds: [],
-          semesterId,
-        }
+          // If courseId changed, check for duplicates
+          if (oldCourseId !== courseId) {
+            const duplicate = prev.courses.find((c) => c.id === courseId)
+            if (duplicate) {
+              setStatus(`Course ${courseId} already exists.`, true)
+              return prev
+            }
+          }
 
-        return { ...prev, courses: [...prev.courses, newCourse] }
-      })
+          const updatedCourses = prev.courses.map((c) => {
+            if (c.id === oldCourseId) {
+              return {
+                ...c,
+                id: courseId,
+                name: courseId,
+                credits,
+                trackId,
+                semesterId,
+              }
+            }
+            return c
+          })
 
-      setAddCourseDialogOpen(false)
-      addCourseButtonRef.current?.focus()
-      setHasUnsavedChanges(true)
-      setSelectedCourseId(courseId)
-      setStatus(`Added course: ${courseId}`)
+          return { ...prev, courses: updatedCourses }
+        })
+
+        setHasUnsavedChanges(true)
+        setStatus(`Updated course: ${courseId}`)
+        setCourseDialogOpen(false)
+        setEditingCourseId(null)
+        setSelectedCourseId(courseId)
+      } else {
+        // Add mode
+        setCurriculum((prev) => {
+          if (!prev) return prev
+
+          const existingCourse = prev.courses.find((c) => c.id === courseId)
+          if (existingCourse) {
+            setStatus(`Course ${courseId} already exists.`, true)
+            return prev
+          }
+
+          const newCourse: Course = {
+            id: courseId,
+            name: courseId,
+            credits,
+            trackId,
+            prerequisiteIds: [],
+            corequisiteIds: [],
+            semesterId,
+            userAdded: true,
+          }
+
+          return { ...prev, courses: [...prev.courses, newCourse] }
+        })
+
+        setHasUnsavedChanges(true)
+        setStatus(`Added course: ${courseId}`)
+        setCourseDialogOpen(false)
+        setSelectedCourseId(courseId)
+      }
     },
     [curriculum, setStatus],
   )
@@ -454,12 +527,18 @@ export function CurriculumApp() {
           onClose={handleCloseAddSemesterDialog}
           onSave={handleSaveAddSemesterDialog}
         />
-        <AddCourseDialog
+        <CourseDialog
+          mode={courseDialogMode}
+          course={
+            courseDialogMode === 'edit'
+              ? (curriculum?.courses.find((c) => c.id === editingCourseId) ?? null)
+              : null
+          }
           semesters={curriculum?.semesters || []}
           trackInfo={trackInfo}
-          open={addCourseDialogOpen}
-          onClose={handleCloseAddCourseDialog}
-          onSave={handleSaveAddCourseDialog}
+          open={courseDialogOpen}
+          onClose={handleCloseCourseDialog}
+          onSave={handleSaveCourseDialog}
         />
       </div>
       <div className="graph-container">
@@ -471,6 +550,7 @@ export function CurriculumApp() {
             selectedCourseId={selectedCourseId}
             onCourseSelect={setSelectedCourseId}
             onCourseMoved={handleCourseMoved}
+            onCourseEdit={handleEditCourse}
             onRegisterResetViewport={handleRegisterResetViewport}
             onRegisterPanBy={handleRegisterPanBy}
             onRegisterZoomBy={handleRegisterZoomBy}

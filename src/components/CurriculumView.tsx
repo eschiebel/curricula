@@ -11,6 +11,7 @@ export interface CurriculumViewProps {
   selectedCourseId?: string | null
   onCourseSelect?: (courseId: string | null) => void
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
+  onCourseEdit?: (courseId: string) => void
   onRegisterResetViewport?: (reset: (() => void) | null) => void
   onRegisterPanBy?: (panBy: ((dx: number, dy: number) => void) | null) => void
   onRegisterZoomBy?: (zoomBy: ((delta: number) => void) | null) => void
@@ -24,6 +25,7 @@ export function CurriculumView(props: CurriculumViewProps) {
     selectedCourseId: externalSelectedCourseId,
     onCourseSelect: externalOnCourseSelect,
     onCourseMoved,
+    onCourseEdit,
     onRegisterResetViewport,
     onRegisterPanBy,
     onRegisterZoomBy,
@@ -72,6 +74,11 @@ export function CurriculumView(props: CurriculumViewProps) {
         if (selectedCourseId != null) {
           setSelectedCourseId(null)
         }
+      } else if (event.key === 'Enter') {
+        if (selectedCourseId != null && onCourseEdit) {
+          event.preventDefault()
+          onCourseEdit(selectedCourseId)
+        }
       }
     }
 
@@ -79,7 +86,7 @@ export function CurriculumView(props: CurriculumViewProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [selectedCourseId])
+  }, [selectedCourseId, onCourseEdit, setSelectedCourseId])
 
   return (
     <>
@@ -90,6 +97,7 @@ export function CurriculumView(props: CurriculumViewProps) {
         onCourseMoved={onCourseMoved}
         selectedCourseId={selectedCourseId}
         onCourseSelect={setSelectedCourseId}
+        onCourseEdit={onCourseEdit}
         onCourseMoveBySemester={handleCourseMoveBySemester}
         focusedSemesterId={focusedSemesterId}
         onRegisterResetViewport={onRegisterResetViewport}

@@ -15,6 +15,7 @@ export interface HelpDialogProps {
 export function HelpDialog(props: HelpDialogProps) {
   const { curriculum, open, onClose } = props
 
+  const dialogRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   const [activeTab, setActiveTab] = useState<TabId>('info')
@@ -39,6 +40,51 @@ export function HelpDialog(props: HelpDialogProps) {
   useEffect(() => {
     if (!open) return
     setActiveTab('info')
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Tab') {
+        if (!dialogRef.current) return
+
+        const allElements = dialogRef.current.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [role="tabpanel"]',
+        )
+
+        // Filter to only elements that are actually tabbable (tabIndex >= 0)
+        const focusableElements = Array.from(allElements).filter((el) => {
+          const tabIndex = (el as HTMLElement).tabIndex
+          return tabIndex >= 0
+        })
+
+        if (focusableElements.length === 0) return
+
+        const firstElement = focusableElements[0] as HTMLElement
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+        const currentIndex = focusableElements.indexOf(document.activeElement as HTMLElement)
+
+        if (event.shiftKey) {
+          // Shift+Tab: moving backwards
+          if (currentIndex === 0 || currentIndex === -1) {
+            event.preventDefault()
+            lastElement?.focus()
+          }
+        } else {
+          // Tab: moving forwards
+          if (currentIndex === focusableElements.length - 1) {
+            event.preventDefault()
+            firstElement?.focus()
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [open])
 
   const focusAndActivateTab = useCallback((tabId: TabId) => {
@@ -204,7 +250,7 @@ export function HelpDialog(props: HelpDialogProps) {
   }
 
   return (
-    <div id="help-dialog" className="help-dialog" role="dialog" aria-label="Help">
+    <div ref={dialogRef} className="help-dialog" role="dialog" aria-label="Help">
       <div className="help-dialog-header">
         <h2 className="help-dialog-title">Help</h2>
         <button

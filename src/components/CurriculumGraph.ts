@@ -12,6 +12,8 @@ export interface Course {
   semesterId: string
   new_semester?: string
   trackId?: string
+  /** True if this course was added by the user (not from catalog). */
+  userAdded?: boolean
 }
 
 export interface Semester {
@@ -44,6 +46,7 @@ export interface RenderOptions {
   onCourseMoved?: (courseId: string, newSemesterId: string) => void
   selectedCourseId?: string | null
   onCourseSelect: (courseId: string | null) => void
+  onCourseEdit?: (courseId: string) => void
   onCourseMoveBySemester?: (courseId: string, direction: 'previous' | 'next') => void
   focusedSemesterId?: string | null
   onRegisterResetViewport?: (reset: (() => void) | null) => void
@@ -212,6 +215,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     onCourseMoved,
     selectedCourseId,
     onCourseSelect,
+    onCourseEdit,
     onCourseMoveBySemester,
     focusedSemesterId,
     onRegisterResetViewport,
@@ -416,6 +420,7 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
           semester: effectiveSemesterId,
           moved: isMoved ? 'true' : 'false',
           violation: violatingCourseIds.has(course.id) ? 'true' : 'false',
+          userAdded: course.userAdded ? 'true' : 'false',
           trackId: laneTrackId,
           trackColor: getTrackColor(trackInfo, laneTrackId),
         },
@@ -485,6 +490,13 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
             'font-size': '24px',
             width: 220,
             height: 60,
+          },
+        },
+        {
+          selector: 'node[userAdded = "true"]',
+          style: {
+            'border-style': 'dotted',
+            'border-width': 2.5,
           },
         },
         {
@@ -672,13 +684,24 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
       })
     }
 
+    if (onCourseEdit) {
+      cy.on('dbltap', 'node', (event) => {
+        const node = event.target
+        const data = node.data()
+        if (!data || data.type === 'semester-header') return
+
+        const courseId: string = data.id
+        onCourseEdit(courseId)
+      })
+    }
+
     return () => {
       const pan = cy.pan()
       viewportRef.current = { zoom: cy.zoom(), pan: clonePan(pan) }
       cy.destroy()
       cyRef.current = null
     }
-  }, [curriculum, setStatus, movedCourseIds, onCourseMoved, onCourseSelect])
+  }, [curriculum, setStatus, movedCourseIds, onCourseMoved, onCourseSelect, onCourseEdit])
 
   useEffect(() => {
     const cy = cyRef.current

@@ -1,20 +1,30 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { JSX } from 'preact'
-import type { Semester, TrackInfo } from './CurriculumGraph'
+import type { Course, Semester, TrackInfo } from './CurriculumGraph'
 
-export interface AddCourseDialogProps {
+export interface CourseDialogProps {
+  mode: 'add' | 'edit'
+  course?: Course | null
   semesters: Semester[]
   trackInfo: TrackInfo | null
   open: boolean
   onClose: () => void
-  onSave: (args: { courseId: string; credits: number; trackId: string; semesterId: string }) => void
+  onSave: (args: {
+    oldCourseId?: string
+    courseId: string
+    credits: number
+    trackId: string
+    semesterId: string
+  }) => void
 }
 
-export function AddCourseDialog(props: AddCourseDialogProps) {
-  const { semesters, trackInfo, open, onClose, onSave } = props
+export function CourseDialog(props: CourseDialogProps) {
+  const { mode, course, semesters, trackInfo, open, onClose, onSave } = props
 
+  const dialogRef = useRef<HTMLDivElement>(null)
   const courseIdInputRef = useRef<HTMLInputElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const saveButtonRef = useRef<HTMLButtonElement>(null)
   const [courseId, setCourseId] = useState<string>('')
   const [credits, setCredits] = useState<string>('')
   const [trackId, setTrackId] = useState<string>('')
@@ -26,11 +36,19 @@ export function AddCourseDialog(props: AddCourseDialogProps) {
 
   useEffect(() => {
     if (!open) return
-    setCourseId('')
-    setCredits('')
-    setTrackId(trackInfo?.trackOrder[0] ?? '')
-    setSemesterId(semestersSorted.length > 0 ? semestersSorted[0].id : '')
-  }, [open, semestersSorted.length, trackInfo])
+
+    if (mode === 'edit' && course) {
+      setCourseId(course.id)
+      setCredits(String(course.credits))
+      setTrackId(course.trackId ?? trackInfo?.trackOrder[0] ?? '')
+      setSemesterId(course.semesterId)
+    } else {
+      setCourseId('')
+      setCredits('')
+      setTrackId(trackInfo?.trackOrder[0] ?? '')
+      setSemesterId(semestersSorted.length > 0 ? semestersSorted[0].id : '')
+    }
+  }, [open, mode, course, trackInfo, semestersSorted.length])
 
   useEffect(() => {
     if (!open) return
@@ -44,6 +62,31 @@ export function AddCourseDialog(props: AddCourseDialogProps) {
       if (event.key === 'Escape' || event.key === 'Esc') {
         event.preventDefault()
         onClose()
+        return
+      }
+
+      if (event.key === 'Tab') {
+        if (!dialogRef.current) return
+
+        const focusableElements = dialogRef.current.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+        )
+        const firstElement = focusableElements[0] as HTMLElement
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+
+        if (event.shiftKey) {
+          // Shift+Tab: moving backwards
+          if (document.activeElement === firstElement) {
+            event.preventDefault()
+            lastElement?.focus()
+          }
+        } else {
+          // Tab: moving forwards
+          if (document.activeElement === lastElement) {
+            event.preventDefault()
+            firstElement?.focus()
+          }
+        }
       }
     }
 
@@ -62,8 +105,23 @@ export function AddCourseDialog(props: AddCourseDialogProps) {
     if (!trackId) return
     if (!semesterId) return
 
-    onSave({ courseId: trimmedCourseId, credits: creditsNum, trackId, semesterId })
-  }, [courseId, credits, trackId, semesterId, onSave])
+    if (mode === 'edit' && course) {
+      onSave({
+        oldCourseId: course.id,
+        courseId: trimmedCourseId,
+        credits: creditsNum,
+        trackId,
+        semesterId,
+      })
+    } else {
+      onSave({
+        courseId: trimmedCourseId,
+        credits: creditsNum,
+        trackId,
+        semesterId,
+      })
+    }
+  }, [mode, course, courseId, credits, trackId, semesterId, onSave])
 
   const handleCourseIdKeyDown = useCallback(
     (event: JSX.TargetedKeyboardEvent<HTMLInputElement>) => {
@@ -86,6 +144,7 @@ export function AddCourseDialog(props: AddCourseDialogProps) {
   )
 
   if (!open) return null
+  if (mode === 'edit' && !course) return null
 
   const creditsNum = parseFloat(credits)
   const canSave =
@@ -95,10 +154,12 @@ export function AddCourseDialog(props: AddCourseDialogProps) {
     trackId.length > 0 &&
     semesterId.length > 0
 
+  const title = mode === 'add' ? 'Add Course' : 'Edit Course'
+
   return (
-    <div className="add-semester-dialog" role="dialog" aria-label="Add Course">
+    <div ref={dialogRef} className="add-semester-dialog" role="dialog" aria-label={title}>
       <div className="add-semester-dialog-header">
-        <h2 className="add-semester-dialog-title">Add Course</h2>
+        <h2 className="add-semester-dialog-title">{title}</h2>
         <button
           ref={closeButtonRef}
           type="button"
@@ -182,7 +243,7 @@ export function AddCourseDialog(props: AddCourseDialogProps) {
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={!canSave}>
+          <button ref={saveButtonRef} type="button" onClick={handleSave} disabled={!canSave}>
             Save
           </button>
         </div>

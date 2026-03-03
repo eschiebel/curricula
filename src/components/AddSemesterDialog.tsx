@@ -14,10 +14,12 @@ type DragItemId = 'new-semester'
 export function AddSemesterDialog(props: AddSemesterDialogProps) {
   const { semesters, open, onClose, onSave } = props
 
+  const dialogRef = useRef<HTMLDivElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const dragHandleRef = useRef<HTMLButtonElement>(null)
   const dragImageRef = useRef<HTMLDivElement | null>(null)
+  const saveButtonRef = useRef<HTMLButtonElement>(null)
   const [name, setName] = useState<string>('')
   const [dragActive, setDragActive] = useState<boolean>(false)
 
@@ -45,6 +47,31 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
       if (event.key === 'Escape' || event.key === 'Esc') {
         event.preventDefault()
         onClose()
+        return
+      }
+
+      if (event.key === 'Tab') {
+        if (!dialogRef.current) return
+
+        const focusableElements = dialogRef.current.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+        )
+        const firstElement = focusableElements[0] as HTMLElement
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+
+        if (event.shiftKey) {
+          // Shift+Tab: moving backwards
+          if (document.activeElement === firstElement) {
+            event.preventDefault()
+            lastElement?.focus()
+          }
+        } else {
+          // Tab: moving forwards
+          if (document.activeElement === lastElement) {
+            event.preventDefault()
+            firstElement?.focus()
+          }
+        }
       }
     }
 
@@ -211,7 +238,7 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
   orderedRows.splice(insertionIndex, 0, newSemesterRow)
 
   return (
-    <div className="add-semester-dialog" role="dialog" aria-label="Add Semester">
+    <div ref={dialogRef} className="add-semester-dialog" role="dialog" aria-label="Add Semester">
       <div className="add-semester-dialog-header">
         <h2 className="add-semester-dialog-title">Add Semester</h2>
         <button
@@ -245,7 +272,12 @@ export function AddSemesterDialog(props: AddSemesterDialogProps) {
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>
-          <button type="button" onClick={handleSave} disabled={name.trim().length === 0}>
+          <button
+            ref={saveButtonRef}
+            type="button"
+            onClick={handleSave}
+            disabled={name.trim().length === 0}
+          >
             Save
           </button>
         </div>
