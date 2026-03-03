@@ -128,6 +128,7 @@ export function HelpDialog(props: HelpDialogProps) {
           <li>Use + and - buttons to zoom.</li>
           <li>Use the arrow buttons to pan.</li>
           <li>The Reset button resets zoom abnd pan.</li>
+          <li>ENTER or double-click on a course you have added to edit or delete.</li>
         </ul>
         <a href="https://forms.gle/eC8UwsKTsQ7jmRao8" target="_blank" rel="noopener">
           Feedback, Suggestions, Bugs, ...

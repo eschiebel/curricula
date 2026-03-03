@@ -12,20 +12,23 @@ export interface CourseDialogProps {
   onSave: (args: {
     oldCourseId?: string
     courseId: string
+    name?: string
     credits: number
     trackId: string
     semesterId: string
   }) => void
+  onDelete?: (courseId: string) => void
 }
 
 export function CourseDialog(props: CourseDialogProps) {
-  const { mode, course, semesters, trackInfo, open, onClose, onSave } = props
+  const { mode, course, semesters, trackInfo, open, onClose, onSave, onDelete } = props
 
   const dialogRef = useRef<HTMLDivElement>(null)
   const courseIdInputRef = useRef<HTMLInputElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const saveButtonRef = useRef<HTMLButtonElement>(null)
   const [courseId, setCourseId] = useState<string>('')
+  const [name, setName] = useState<string>('')
   const [credits, setCredits] = useState<string>('')
   const [trackId, setTrackId] = useState<string>('')
   const [semesterId, setSemesterId] = useState<string>('')
@@ -39,11 +42,13 @@ export function CourseDialog(props: CourseDialogProps) {
 
     if (mode === 'edit' && course) {
       setCourseId(course.id)
+      setName(course.name || '')
       setCredits(String(course.credits))
       setTrackId(course.trackId ?? trackInfo?.trackOrder[0] ?? '')
       setSemesterId(course.semesterId)
     } else {
       setCourseId('')
+      setName('')
       setCredits('')
       setTrackId(trackInfo?.trackOrder[0] ?? '')
       setSemesterId(semestersSorted.length > 0 ? semestersSorted[0].id : '')
@@ -105,10 +110,13 @@ export function CourseDialog(props: CourseDialogProps) {
     if (!trackId) return
     if (!semesterId) return
 
+    const trimmedName = name.trim()
+
     if (mode === 'edit' && course) {
       onSave({
         oldCourseId: course.id,
         courseId: trimmedCourseId,
+        name: trimmedName.length > 0 ? trimmedName : undefined,
         credits: creditsNum,
         trackId,
         semesterId,
@@ -116,12 +124,13 @@ export function CourseDialog(props: CourseDialogProps) {
     } else {
       onSave({
         courseId: trimmedCourseId,
+        name: trimmedName.length > 0 ? trimmedName : undefined,
         credits: creditsNum,
         trackId,
         semesterId,
       })
     }
-  }, [mode, course, courseId, credits, trackId, semesterId, onSave])
+  }, [mode, course, courseId, name, credits, trackId, semesterId, onSave])
 
   const handleCourseIdKeyDown = useCallback(
     (event: JSX.TargetedKeyboardEvent<HTMLInputElement>) => {
@@ -190,6 +199,17 @@ export function CourseDialog(props: CourseDialogProps) {
           </div>
 
           <div className="add-course-dialog-field">
+            <label htmlFor="course-name-input">Course Name</label>
+            <input
+              id="course-name-input"
+              type="text"
+              value={name}
+              onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
+              placeholder="e.g., Introduction to Engineering"
+            />
+          </div>
+
+          <div className="add-course-dialog-field">
             <label htmlFor="credits-input">
               Credits<sup aria-hidden="true">*</sup>
             </label>
@@ -240,6 +260,16 @@ export function CourseDialog(props: CourseDialogProps) {
         </div>
 
         <div className="add-semester-dialog-actions">
+          {mode === 'edit' && onDelete && course && (
+            <button
+              type="button"
+              className="danger"
+              onClick={() => onDelete(course.id)}
+              style={{ marginRight: 'auto' }}
+            >
+              Delete
+            </button>
+          )}
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>

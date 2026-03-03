@@ -139,6 +139,40 @@ describe('CourseDialog - Add Mode', () => {
     })
   })
 
+  it('includes name in onSave when name field is provided', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+
+    const { getByRole, getByLabelText } = render(
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    const courseIdInput = getByLabelText(/Course ID/)
+    const nameInput = getByLabelText(/Course Name/)
+    const creditsInput = getByLabelText(/Credits/)
+
+    fireEvent.input(courseIdInput, { target: { value: 'EMEC-100' } })
+    fireEvent.input(nameInput, { target: { value: 'Introduction to Engineering' } })
+    fireEvent.input(creditsInput, { target: { value: '3' } })
+
+    fireEvent.click(getByRole('button', { name: 'Save' }))
+
+    expect(onSave).toHaveBeenCalledWith({
+      courseId: 'EMEC-100',
+      name: 'Introduction to Engineering',
+      credits: 3,
+      trackId: 'math',
+      semesterId: 's1',
+    })
+  })
+
   it('defaults to first semester and first track when dialog opens', () => {
     const onSave = vi.fn()
     const onClose = vi.fn()
@@ -234,6 +268,7 @@ describe('CourseDialog - Edit Mode', () => {
     expect(onSave).toHaveBeenCalledWith({
       oldCourseId: 'EMEC-100',
       courseId: 'EMEC-101',
+      name: 'EMEC-100',
       credits: 3,
       trackId: 'math',
       semesterId: 's1',
@@ -338,5 +373,91 @@ describe('CourseDialog - Common Behavior', () => {
 
     const closeButton = getByRole('button', { name: 'Close' })
     expect(document.activeElement).toBe(closeButton)
+  })
+
+  it('shows Delete button in edit mode when onDelete is provided', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+    const onDelete = vi.fn()
+    const course = buildCourse()
+
+    const { getByRole } = render(
+      <CourseDialog
+        mode="edit"
+        course={course}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+        onDelete={onDelete}
+      />,
+    )
+
+    expect(getByRole('button', { name: 'Delete' })).toBeInTheDocument()
+  })
+
+  it('does not show Delete button in add mode', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+    const onDelete = vi.fn()
+
+    const { queryByRole } = render(
+      <CourseDialog
+        mode="add"
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+        onDelete={onDelete}
+      />,
+    )
+
+    expect(queryByRole('button', { name: 'Delete' })).toBeNull()
+  })
+
+  it('does not show Delete button in edit mode when onDelete is not provided', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+    const course = buildCourse()
+
+    const { queryByRole } = render(
+      <CourseDialog
+        mode="edit"
+        course={course}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    expect(queryByRole('button', { name: 'Delete' })).toBeNull()
+  })
+
+  it('calls onDelete with course ID when Delete button is clicked', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+    const onDelete = vi.fn()
+    const course = buildCourse()
+
+    const { getByRole } = render(
+      <CourseDialog
+        mode="edit"
+        course={course}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+        onDelete={onDelete}
+      />,
+    )
+
+    fireEvent.click(getByRole('button', { name: 'Delete' }))
+
+    expect(onDelete).toHaveBeenCalledWith('EMEC-100')
   })
 })

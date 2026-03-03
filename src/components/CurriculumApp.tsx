@@ -285,15 +285,48 @@ export function CurriculumApp() {
     addCourseButtonRef.current?.focus()
   }, [])
 
+  const handleDeleteCourse = useCallback(
+    (courseId: string) => {
+      if (!curriculum) {
+        setStatus('No curriculum loaded.', true)
+        return
+      }
+
+      const course = curriculum.courses.find((c) => c.id === courseId)
+      if (!course) {
+        setStatus(`Course ${courseId} not found.`, true)
+        return
+      }
+
+      if (!course.userAdded) {
+        setStatus('Only user-added courses can be deleted.', true)
+        return
+      }
+
+      setCurriculum((prev) => {
+        if (!prev) return prev
+        return { ...prev, courses: prev.courses.filter((c) => c.id !== courseId) }
+      })
+
+      setHasUnsavedChanges(true)
+      setStatus(`Deleted course: ${courseId}`)
+      setCourseDialogOpen(false)
+      setEditingCourseId(null)
+      setSelectedCourseId(null)
+    },
+    [curriculum, setStatus],
+  )
+
   const handleSaveCourseDialog = useCallback(
     (args: {
       oldCourseId?: string
       courseId: string
+      name?: string
       credits: number
       trackId: string
       semesterId: string
     }) => {
-      const { oldCourseId, courseId, credits, trackId, semesterId } = args
+      const { oldCourseId, courseId, name, credits, trackId, semesterId } = args
 
       if (!curriculum) {
         setStatus('No curriculum loaded.', true)
@@ -325,7 +358,7 @@ export function CurriculumApp() {
               return {
                 ...c,
                 id: courseId,
-                name: courseId,
+                name: name || courseId,
                 credits,
                 trackId,
                 semesterId,
@@ -355,7 +388,7 @@ export function CurriculumApp() {
 
           const newCourse: Course = {
             id: courseId,
-            name: courseId,
+            name: name || courseId,
             credits,
             trackId,
             prerequisiteIds: [],
@@ -549,6 +582,7 @@ export function CurriculumApp() {
           open={courseDialogOpen}
           onClose={handleCloseCourseDialog}
           onSave={handleSaveCourseDialog}
+          onDelete={handleDeleteCourse}
         />
       </div>
       <div className="graph-container">

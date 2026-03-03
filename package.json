@@ -16,6 +16,7 @@
     "format": "biome format --write src",
     "lint": "biome lint src",
     "check": "biome check src --config-path ../biome.json",
+    "check:fix": "npm run check -- --write",
     "typecheck": "tsc --noEmit",
     "predeploy": "npm run check && npm run build",
     "deploy": "gh-pages -d dist"

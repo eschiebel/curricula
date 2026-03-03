@@ -147,6 +147,9 @@ export function CurriculumList(props: CurriculumListProps) {
 
   return (
     <div className="curriculum-list-offscreen">
+      <div id="user-course-edit-instructions">
+        Press Enter or double-click to edit or delete this course.
+      </div>
       {semestersSorted.map((semester) => {
         const courses = coursesBySemester[semester.id] || []
         const credits = creditsBySemesterId[semester.id] ?? 0
@@ -162,12 +165,14 @@ export function CurriculumList(props: CurriculumListProps) {
           >
             {courses.map((course) => {
               const isSelected = course.id === selectedCourseId
+              const isUserAdded = course.userAdded === true
               return (
                 <li
                   key={course.id}
                   data-course-id={course.id}
                   role="option"
                   aria-selected={isSelected ? 'true' : 'false'}
+                  aria-describedby={isUserAdded ? 'user-course-edit-instructions' : undefined}
                   className={isSelected ? 'course-selected' : undefined}
                   tabIndex={-1}
                   ref={(el) => {
