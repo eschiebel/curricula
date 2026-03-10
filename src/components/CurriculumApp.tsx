@@ -634,7 +634,7 @@ export function CurriculumApp() {
     } else if (!isEditMode && curriculum) {
       // Warn user before entering edit mode with a loaded curriculum
       const confirmed = window.confirm(
-        'You are about to enter edit mode. This will allow you to make changes to the currently loaded curriculum.\n\nAre you sure you want to continue?',
+        'You are about to enter edit mode. This will allow you to make changes to the curriculum that are generally set by the institution.\n\nAre you sure you want to continue?',
       )
       if (confirmed) {
         setIsEditMode(true)
