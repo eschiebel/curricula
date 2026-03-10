@@ -136,6 +136,8 @@ describe('CourseDialog - Add Mode', () => {
       credits: 3,
       trackId: 'physics',
       semesterId: 's2',
+      prerequisiteIds: [],
+      corequisiteIds: [],
     })
   })
 
@@ -170,6 +172,8 @@ describe('CourseDialog - Add Mode', () => {
       credits: 3,
       trackId: 'math',
       semesterId: 's1',
+      prerequisiteIds: [],
+      corequisiteIds: [],
     })
   })
 
@@ -272,6 +276,8 @@ describe('CourseDialog - Edit Mode', () => {
       credits: 3,
       trackId: 'math',
       semesterId: 's1',
+      prerequisiteIds: [],
+      corequisiteIds: [],
     })
   })
 
@@ -459,5 +465,256 @@ describe('CourseDialog - Common Behavior', () => {
     fireEvent.click(getByRole('button', { name: 'Delete' }))
 
     expect(onDelete).toHaveBeenCalledWith('EMEC-100')
+  })
+})
+
+describe('CourseDialog - Prerequisites and Corequisites Mutual Exclusion', () => {
+  function buildCoursesForPrereqTests(): Course[] {
+    return [
+      {
+        id: 'MATH-101',
+        name: 'Calculus I',
+        credits: 4,
+        semesterId: 's1',
+        trackId: 'math',
+        prerequisiteIds: [],
+        corequisiteIds: [],
+      },
+      {
+        id: 'PHYS-201',
+        name: 'Physics I',
+        credits: 3,
+        semesterId: 's1',
+        trackId: 'physics',
+        prerequisiteIds: [],
+        corequisiteIds: [],
+      },
+      {
+        id: 'CHEM-101',
+        name: 'Chemistry I',
+        credits: 3,
+        semesterId: 's1',
+        trackId: 'physics',
+        prerequisiteIds: [],
+        corequisiteIds: [],
+      },
+    ]
+  }
+
+  it('disables course in corequisites when selected as prerequisite', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+
+    const { getAllByRole } = render(
+      <CourseDialog
+        mode="add"
+        courses={buildCoursesForPrereqTests()}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    const checkboxes = getAllByRole('checkbox') as HTMLInputElement[]
+
+    // First 3 checkboxes are prerequisites, next 3 are corequisites
+    const math101Prereq = checkboxes[0]
+    const math101Coreq = checkboxes[3]
+
+    // Initially both should be enabled
+    expect(math101Prereq.disabled).toBe(false)
+    expect(math101Coreq.disabled).toBe(false)
+
+    // Select MATH-101 as prerequisite
+    fireEvent.click(math101Prereq)
+
+    // Now MATH-101 should be disabled in corequisites
+    expect(math101Prereq.disabled).toBe(false)
+    expect(math101Coreq.disabled).toBe(true)
+  })
+
+  it('disables course in prerequisites when selected as corequisite', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+
+    const { getAllByRole } = render(
+      <CourseDialog
+        mode="add"
+        courses={buildCoursesForPrereqTests()}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    const checkboxes = getAllByRole('checkbox') as HTMLInputElement[]
+
+    // First 3 checkboxes are prerequisites, next 3 are corequisites
+    const phys201Prereq = checkboxes[1]
+    const phys201Coreq = checkboxes[4]
+
+    // Initially both should be enabled
+    expect(phys201Prereq.disabled).toBe(false)
+    expect(phys201Coreq.disabled).toBe(false)
+
+    // Select PHYS-201 as corequisite
+    fireEvent.click(phys201Coreq)
+
+    // Now PHYS-201 should be disabled in prerequisites
+    expect(phys201Prereq.disabled).toBe(true)
+    expect(phys201Coreq.disabled).toBe(false)
+  })
+
+  it('re-enables course when deselected from opposite list', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+
+    const { getAllByRole } = render(
+      <CourseDialog
+        mode="add"
+        courses={buildCoursesForPrereqTests()}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    const checkboxes = getAllByRole('checkbox') as HTMLInputElement[]
+
+    const chem101Prereq = checkboxes[2]
+    const chem101Coreq = checkboxes[5]
+
+    // Select as prerequisite
+    fireEvent.click(chem101Prereq)
+    expect(chem101Coreq.disabled).toBe(true)
+
+    // Deselect from prerequisites
+    fireEvent.click(chem101Prereq)
+    expect(chem101Coreq.disabled).toBe(false)
+  })
+
+  it('allows multiple courses to be selected as prerequisites without affecting each other', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+
+    const { getAllByRole } = render(
+      <CourseDialog
+        mode="add"
+        courses={buildCoursesForPrereqTests()}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    const checkboxes = getAllByRole('checkbox') as HTMLInputElement[]
+
+    const math101Prereq = checkboxes[0]
+    const phys201Prereq = checkboxes[1]
+    const math101Coreq = checkboxes[3]
+    const phys201Coreq = checkboxes[4]
+
+    // Select both as prerequisites
+    fireEvent.click(math101Prereq)
+    fireEvent.click(phys201Prereq)
+
+    // Both should be disabled in corequisites
+    expect(math101Coreq.disabled).toBe(true)
+    expect(phys201Coreq.disabled).toBe(true)
+
+    // Both should still be enabled in prerequisites
+    expect(math101Prereq.disabled).toBe(false)
+    expect(phys201Prereq.disabled).toBe(false)
+  })
+
+  it('prevents saving course with same course as both prerequisite and corequisite', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+
+    const { getAllByRole, getByRole, getByLabelText } = render(
+      <CourseDialog
+        mode="add"
+        courses={buildCoursesForPrereqTests()}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    // Fill in required fields
+    const courseIdInput = getByLabelText(/Course ID/)
+    const creditsInput = getByLabelText(/Credits/)
+    fireEvent.input(courseIdInput, { target: { value: 'EMEC-100' } })
+    fireEvent.input(creditsInput, { target: { value: '3' } })
+
+    const checkboxes = getAllByRole('checkbox') as HTMLInputElement[]
+
+    // Select MATH-101 as prerequisite
+    fireEvent.click(checkboxes[0])
+
+    // Try to select MATH-101 as corequisite (should be disabled)
+    const math101Coreq = checkboxes[3]
+    expect(math101Coreq.disabled).toBe(true)
+
+    // Save
+    fireEvent.click(getByRole('button', { name: 'Save' }))
+
+    // Should have saved with only prerequisite, not corequisite
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prerequisiteIds: ['MATH-101'],
+        corequisiteIds: [],
+      }),
+    )
+  })
+
+  it('pre-populates disabled state in edit mode', () => {
+    const onSave = vi.fn()
+    const onClose = vi.fn()
+
+    const course: Course = {
+      id: 'EMEC-200',
+      name: 'Engineering Mechanics',
+      credits: 3,
+      semesterId: 's2',
+      trackId: 'physics',
+      prerequisiteIds: ['MATH-101'],
+      corequisiteIds: ['PHYS-201'],
+    }
+
+    const { getAllByRole } = render(
+      <CourseDialog
+        mode="edit"
+        course={course}
+        courses={buildCoursesForPrereqTests()}
+        semesters={buildSemesters()}
+        trackInfo={buildTrackInfo()}
+        open
+        onClose={onClose}
+        onSave={onSave}
+      />,
+    )
+
+    const checkboxes = getAllByRole('checkbox') as HTMLInputElement[]
+
+    // MATH-101 is selected as prerequisite, so should be disabled in corequisites
+    const math101Coreq = checkboxes[3]
+    expect(math101Coreq.disabled).toBe(true)
+    expect(math101Coreq.checked).toBe(false)
+
+    // PHYS-201 is selected as corequisite, so should be disabled in prerequisites
+    const phys201Prereq = checkboxes[1]
+    expect(phys201Prereq.disabled).toBe(true)
+    expect(phys201Prereq.checked).toBe(false)
   })
 })

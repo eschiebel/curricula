@@ -84,6 +84,19 @@ vi.mock('cytoscape', () => {
     width: vi.fn(() => 800),
     height: vi.fn(() => 600),
     batch: vi.fn((fn: () => void) => fn()),
+    nodes: vi.fn(() => makeNodeCollection(0)),
+    elements: vi.fn(() => ({
+      boundingBox: () => ({
+        x1: 0,
+        y1: 0,
+        x2: 800,
+        y2: 600,
+        w: 800,
+        h: 600,
+      }),
+    })),
+    fit: vi.fn(),
+    center: vi.fn(),
     $: vi.fn((selector: string) => {
       if (selector === 'node') return makeNodeCollection(1)
       if (selector === 'edge') return makeEdgeCollection(1)

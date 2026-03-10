@@ -129,6 +129,19 @@ export function HelpDialog(props: HelpDialogProps) {
           <li>Use the arrow buttons to pan.</li>
           <li>The Reset button resets zoom abnd pan.</li>
           <li>ENTER or double-click on a course you have added to edit or delete.</li>
+          <li>
+            <span style={{ fontWeight: 'bold' }}>New|Edit Curriculum</span>
+          </li>
+          <ul>
+            <li>
+              This enables <span style={{ fontStyle: 'italic' }}>Edit Mode</span>, which enabled
+              editing everything in the loaded curriculum.
+            </li>
+            <li>
+              Ordinarily, the user cannot edit tracks, semesters, or courses defined in the current
+              curriculum, only add new ones and edit those they've added.
+            </li>
+          </ul>
         </ul>
         <a href="https://forms.gle/eC8UwsKTsQ7jmRao8" target="_blank" rel="noopener">
           Feedback, Suggestions, Bugs, ...

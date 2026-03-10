@@ -186,9 +186,8 @@ export function getCurriculumTrackInfo(curriculum: Curriculum): TrackInfo {
     .filter((t) => !configuredOrder.includes(t))
     .sort((a, b) => a.localeCompare(b))
 
-  const trackOrder = [...configuredOrder, ...unknownTrackOrder].filter((t) =>
-    trackIdsPresent.has(t),
-  )
+  // Include all configured tracks, plus any unknown tracks from courses
+  const trackOrder = [...configuredOrder, ...unknownTrackOrder]
 
   const trackNameById: Record<string, string> = { ...configuredNames }
   for (const trackId of trackOrder) {
@@ -592,6 +591,30 @@ export function CurriculumGraph(props: CurriculumGraphProps) {
     if (viewportRef.current) {
       cy.zoom(viewportRef.current.zoom)
       cy.pan(clonePan(viewportRef.current.pan))
+    } else {
+      // Fit the curriculum to the viewport
+      const nodes = cy.nodes()
+      if (nodes.length > 0) {
+        // Use fit() to zoom to show all content, but limit max zoom to prevent over-zooming
+        cy.fit(nodes, 50) // 50px padding
+        const currentZoom = cy.zoom()
+        const maxZoom = 1.0 // Limit zoom to prevent sparse curricula from being too large
+        if (currentZoom > maxZoom) {
+          cy.zoom(maxZoom)
+        }
+
+        // Adjust pan to position semester headers near the top
+        const bb = cy.elements().boundingBox()
+        const currentPan = cy.pan()
+        const topMargin = 80 // Distance from top of viewport to top of content
+        const newPanY = -bb.y1 * currentZoom + topMargin
+        cy.pan({ x: currentPan.x, y: newPanY })
+      } else {
+        // Empty curriculum: position viewport for adding content
+        const containerWidth = cy.width()
+        cy.zoom(0.8)
+        cy.pan({ x: containerWidth / 3, y: 50 })
+      }
     }
 
     if (!defaultViewportRef.current) {

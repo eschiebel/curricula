@@ -5,6 +5,7 @@ import type { Course, Semester, TrackInfo } from './CurriculumGraph'
 export interface CourseDialogProps {
   mode: 'add' | 'edit'
   course?: Course | null
+  courses?: Course[]
   semesters: Semester[]
   trackInfo: TrackInfo | null
   open: boolean
@@ -16,12 +17,14 @@ export interface CourseDialogProps {
     credits: number
     trackId: string
     semesterId: string
+    prerequisiteIds: string[]
+    corequisiteIds: string[]
   }) => void
   onDelete?: (courseId: string) => void
 }
 
 export function CourseDialog(props: CourseDialogProps) {
-  const { mode, course, semesters, trackInfo, open, onClose, onSave, onDelete } = props
+  const { mode, course, courses, semesters, trackInfo, open, onClose, onSave, onDelete } = props
 
   const dialogRef = useRef<HTMLDivElement>(null)
   const courseIdInputRef = useRef<HTMLInputElement>(null)
@@ -32,6 +35,8 @@ export function CourseDialog(props: CourseDialogProps) {
   const [credits, setCredits] = useState<string>('')
   const [trackId, setTrackId] = useState<string>('')
   const [semesterId, setSemesterId] = useState<string>('')
+  const [prerequisiteIds, setPrerequisiteIds] = useState<string[]>([])
+  const [corequisiteIds, setCorequisiteIds] = useState<string[]>([])
 
   const semestersSorted = useMemo(() => {
     return [...(semesters || [])].sort((a, b) => a.order - b.order)
@@ -46,12 +51,16 @@ export function CourseDialog(props: CourseDialogProps) {
       setCredits(String(course.credits))
       setTrackId(course.trackId ?? trackInfo?.trackOrder[0] ?? '')
       setSemesterId(course.semesterId)
+      setPrerequisiteIds(course.prerequisiteIds || [])
+      setCorequisiteIds(course.corequisiteIds || [])
     } else {
       setCourseId('')
       setName('')
       setCredits('')
       setTrackId(trackInfo?.trackOrder[0] ?? '')
       setSemesterId(semestersSorted.length > 0 ? semestersSorted[0].id : '')
+      setPrerequisiteIds([])
+      setCorequisiteIds([])
     }
   }, [open, mode, course, trackInfo, semestersSorted.length])
 
@@ -120,6 +129,8 @@ export function CourseDialog(props: CourseDialogProps) {
         credits: creditsNum,
         trackId,
         semesterId,
+        prerequisiteIds,
+        corequisiteIds,
       })
     } else {
       onSave({
@@ -128,9 +139,22 @@ export function CourseDialog(props: CourseDialogProps) {
         credits: creditsNum,
         trackId,
         semesterId,
+        prerequisiteIds,
+        corequisiteIds,
       })
     }
-  }, [mode, course, courseId, name, credits, trackId, semesterId, onSave])
+  }, [
+    mode,
+    course,
+    courseId,
+    name,
+    credits,
+    trackId,
+    semesterId,
+    prerequisiteIds,
+    corequisiteIds,
+    onSave,
+  ])
 
   const handleCourseIdKeyDown = useCallback(
     (event: JSX.TargetedKeyboardEvent<HTMLInputElement>) => {
@@ -151,6 +175,30 @@ export function CourseDialog(props: CourseDialogProps) {
     },
     [handleSave],
   )
+
+  const handleTogglePrerequisite = useCallback((id: string) => {
+    setPrerequisiteIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((p) => p !== id)
+      }
+      return [...prev, id]
+    })
+  }, [])
+
+  const handleToggleCorequisite = useCallback((id: string) => {
+    setCorequisiteIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((c) => c !== id)
+      }
+      return [...prev, id]
+    })
+  }, [])
+
+  const availableCourses = useMemo(() => {
+    if (!courses) return []
+    const currentCourseId = mode === 'edit' && course ? course.id : courseId.trim()
+    return courses.filter((c) => c.id !== currentCourseId)
+  }, [courses, mode, course, courseId])
 
   if (!open) return null
   if (mode === 'edit' && !course) return null
@@ -257,6 +305,90 @@ export function CourseDialog(props: CourseDialogProps) {
               ))}
             </select>
           </div>
+
+          {availableCourses.length > 0 && (
+            <>
+              <div className="add-course-dialog-field">
+                <div style={{ fontWeight: 600, marginBottom: '4px' }}>Prerequisites</div>
+                <div
+                  style={{
+                    maxHeight: '120px',
+                    overflowY: 'auto',
+                    border: '1px solid #ccc',
+                    padding: '8px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {availableCourses.map((c) => {
+                    const isDisabled = corequisiteIds.includes(c.id)
+                    return (
+                      <div key={c.id} style={{ marginBottom: '4px' }}>
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: isDisabled ? 'not-allowed' : 'pointer',
+                            opacity: isDisabled ? 0.5 : 1,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={prerequisiteIds.includes(c.id)}
+                            disabled={isDisabled}
+                            onChange={() => handleTogglePrerequisite(c.id)}
+                            style={{ marginRight: '8px' }}
+                          />
+                          <span>
+                            {c.id} {c.name && `- ${c.name}`}
+                          </span>
+                        </label>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="add-course-dialog-field">
+                <div style={{ fontWeight: 600, marginBottom: '4px' }}>Corequisites</div>
+                <div
+                  style={{
+                    maxHeight: '120px',
+                    overflowY: 'auto',
+                    border: '1px solid #ccc',
+                    padding: '8px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {availableCourses.map((c) => {
+                    const isDisabled = prerequisiteIds.includes(c.id)
+                    return (
+                      <div key={c.id} style={{ marginBottom: '4px' }}>
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: isDisabled ? 'not-allowed' : 'pointer',
+                            opacity: isDisabled ? 0.5 : 1,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={corequisiteIds.includes(c.id)}
+                            disabled={isDisabled}
+                            onChange={() => handleToggleCorequisite(c.id)}
+                            style={{ marginRight: '8px' }}
+                          />
+                          <span>
+                            {c.id} {c.name && `- ${c.name}`}
+                          </span>
+                        </label>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="add-semester-dialog-actions">

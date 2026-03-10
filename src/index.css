@@ -37,6 +37,11 @@ body *:focus-visible {
   z-index: 1;
 }
 
+.top-bar.edit-mode {
+  background: #ffe4b5;
+  border-bottom: 3px solid #ffa500;
+}
+
 .top-bar-title {
   display: flex;
   align-items: center;
@@ -167,12 +172,18 @@ button {
   font-size: 13px;
   font-weight: bold;
   cursor: pointer;
-  background: #3498db;
+  background: hsl(204.07, 69.87%, 53.14%);
   color: #ffffff;
+  &:hover {
+    outline: 2px solid hsl(204.07, 69.87%, 35%);
+  }
 }
 
 button.secondary {
-  background: #95a5a6;
+  background: hsl(183.53, 8.72%, 61.76%);
+  &:hover {
+    outline: 2px solid hsl(183.53, 8.72%, 35%);
+  }
 }
 
 button.close-button {
@@ -316,6 +327,13 @@ li.course-selected {
       }
     }
   }
+}
+
+.edit-mode-button.active {
+  background-color: #ffd700;
+  border-color: #ffb700;
+  color: #333;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
 }
 
 .help-button {
