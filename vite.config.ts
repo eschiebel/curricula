@@ -6,5 +6,8 @@ export default defineConfig(({ command }) => {
   return {
     base: command === 'serve' ? '/' : '/curricula/',
     plugins: [preact()],
+    build: {
+      chunkSizeWarningLimit: 600, // Suppress warning for chunks < 600 kB
+    },
   }
 })
