@@ -6,6 +6,7 @@ import { AddSemesterDialog } from './AddSemesterDialog'
 import { AddTrackDialog } from './AddTrackDialog'
 import { CourseDialog } from './CourseDialog'
 import { HelpDialog } from './HelpDialog'
+import { validateCurriculumJson } from '../validation/validateCurriculum'
 
 export function CurriculumApp() {
   const resetViewportRef = useRef<(() => void) | null>(null)
@@ -88,9 +89,16 @@ export function CurriculumApp() {
   const loadCurriculumFromJsonText = (jsonText: string, sourceDescription: string) => {
     try {
       const json = JSON.parse(jsonText)
-      setCurriculum(json)
-      const movedIds = Array.isArray(json?.courses)
-        ? (json.courses as Array<{ id?: unknown; new_semester?: unknown }>)
+      const validated = validateCurriculumJson(json)
+      if (!validated.ok) {
+        console.error('Curriculum JSON schema validation failed:', validated.error)
+        setStatus(`Invalid curriculum JSON: ${validated.error}`, true)
+        return
+      }
+
+      setCurriculum(validated.curriculum)
+      const movedIds = Array.isArray(validated.curriculum?.courses)
+        ? (validated.curriculum.courses as Array<{ id?: unknown; new_semester?: unknown }>)
             .filter((c) => typeof c?.id === 'string' && c?.new_semester != null)
             .map((c) => String(c.id))
         : []

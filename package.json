@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "cytoscape": "^3.33.1",
+    "ajv": "^8.17.1",
     "preact": "^10.27.2"
   },
   "devDependencies": {

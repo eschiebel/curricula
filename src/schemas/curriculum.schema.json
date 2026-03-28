@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eschiebel.github.io/curricula/schemas/curriculum.schema.json",
+  "title": "Curriculum",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["curriculumId", "name", "totalCredits", "semesters", "courses"],
+  "properties": {
+    "curriculumId": { "type": "string" },
+    "name": { "type": "string" },
+    "totalCredits": { "type": "number", "minimum": 0 },
+    "tracks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/trackDefinition" }
+    },
+    "semesters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/semester" }
+    },
+    "courses": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/course" }
+    }
+  },
+  "$defs": {
+    "trackDefinition": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "name"],
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string" }
+        }
+      ]
+    },
+    "semester": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "order"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "order": { "type": "integer" },
+        "courseIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "course": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "credits", "prerequisiteIds", "corequisiteIds", "semesterId"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "credits": { "type": "number", "minimum": 0 },
+        "prerequisiteIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "corequisiteIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "semesterId": { "type": "string" },
+        "new_semester": { "type": "string" },
+        "trackId": { "type": "string" },
+        "userAdded": { "type": "boolean" }
+      }
+    }
+  }
+}

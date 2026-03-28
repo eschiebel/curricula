@@ -193,7 +193,7 @@ export function AddTrackDialog(props: AddTrackDialogProps) {
                   }}
                 >
                   <div>
-                    <strong>{track.name}</strong>
+                    <strong>{track.name}</strong> <span>({track.id})</span>
                   </div>
                   {onDelete && isEditMode && (
                     <button
