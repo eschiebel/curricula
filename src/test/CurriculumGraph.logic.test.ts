@@ -145,9 +145,33 @@ describe('CurriculumGraph logic', () => {
         { id: 't3', name: 'T3' },
       ],
       courses: [
-        { id: 'C1', name: 'C1', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 't1' },
-        { id: 'C2', name: 'C2', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 't2' },
-        { id: 'C3', name: 'C3', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 't3' },
+        {
+          id: 'C1',
+          name: 'C1',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 't1',
+        },
+        {
+          id: 'C2',
+          name: 'C2',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 't2',
+        },
+        {
+          id: 'C3',
+          name: 'C3',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 't3',
+        },
       ],
     })
     const info = getCurriculumTrackInfo(curriculum)
@@ -166,7 +190,15 @@ describe('CurriculumGraph logic', () => {
     const curriculum = buildCurriculumFixture({
       tracks: [null, 42, { id: 't1', name: 'Valid' }] as unknown as TrackDefinition[],
       courses: [
-        { id: 'C1', name: 'C1', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 't1' },
+        {
+          id: 'C1',
+          name: 'C1',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 't1',
+        },
       ],
     })
     expect(() => getCurriculumTrackInfo(curriculum)).not.toThrow()
@@ -192,8 +224,22 @@ describe('CurriculumGraph logic', () => {
     const curriculum = buildCurriculumFixture({
       tracks: [],
       courses: [
-        { id: 'C1', name: 'C1', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1' },
-        { id: 'C2', name: 'C2', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1' },
+        {
+          id: 'C1',
+          name: 'C1',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+        },
+        {
+          id: 'C2',
+          name: 'C2',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+        },
       ],
     })
     const info = getCurriculumTrackInfo(curriculum)
@@ -205,7 +251,15 @@ describe('CurriculumGraph logic', () => {
     const curriculum = buildCurriculumFixture({
       tracks: [{ 'legacy-track': 'Legacy Track Name' }],
       courses: [
-        { id: 'C1', name: 'C1', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 'legacy-track' },
+        {
+          id: 'C1',
+          name: 'C1',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 'legacy-track',
+        },
       ],
     })
     const info = getCurriculumTrackInfo(curriculum)
@@ -217,7 +271,15 @@ describe('CurriculumGraph logic', () => {
     const curriculum = buildCurriculumFixture({
       tracks: undefined,
       courses: [
-        { id: 'C1', name: 'C1', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 'auto-track' },
+        {
+          id: 'C1',
+          name: 'C1',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 'auto-track',
+        },
       ],
     })
     expect(() => getCurriculumTrackInfo(curriculum)).not.toThrow()
@@ -255,9 +317,32 @@ describe('CurriculumGraph logic', () => {
         { id: 'b', name: 'B' },
       ],
       courses: [
-        { id: 'C1', name: 'C1', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 'a' },
-        { id: 'C2', name: 'C2', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1', trackId: 'b' },
-        { id: 'C3', name: 'C3', credits: 3, prerequisiteIds: [], corequisiteIds: [], semesterId: 's1' }, // untracked
+        {
+          id: 'C1',
+          name: 'C1',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 'a',
+        },
+        {
+          id: 'C2',
+          name: 'C2',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+          trackId: 'b',
+        },
+        {
+          id: 'C3',
+          name: 'C3',
+          credits: 3,
+          prerequisiteIds: [],
+          corequisiteIds: [],
+          semesterId: 's1',
+        }, // untracked
       ],
     })
     const info = getCurriculumTrackInfo(curriculum)
