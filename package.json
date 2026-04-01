@@ -1,7 +1,7 @@
 {
   "name": "curricula",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "homepage": "https://eschiebel.github.io/curricula",
   "scripts": {

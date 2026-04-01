@@ -6,7 +6,6 @@ import { AddSemesterDialog } from './AddSemesterDialog'
 import { AddTrackDialog } from './AddTrackDialog'
 import { CourseDialog } from './CourseDialog'
 import { HelpDialog } from './HelpDialog'
-import { validateCurriculumJson } from '../validation/validateCurriculum'
 
 export function CurriculumApp() {
   const resetViewportRef = useRef<(() => void) | null>(null)
@@ -28,6 +27,31 @@ export function CurriculumApp() {
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null)
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [isEditMode, setIsEditMode] = useState<boolean>(false)
+  const [isValidatorLoading, setIsValidatorLoading] = useState<boolean>(false)
+
+  const validatorModuleRef = useRef<null | typeof import('../validation/validateCurriculum')>(null)
+  const validatorPromiseRef = useRef<null | Promise<
+    typeof import('../validation/validateCurriculum')
+  >>(null)
+
+  const startValidatorLoad = useCallback(() => {
+    if (validatorModuleRef.current) {
+      return Promise.resolve(validatorModuleRef.current)
+    }
+    if (!validatorPromiseRef.current) {
+      validatorPromiseRef.current = import('../validation/validateCurriculum').then((mod) => {
+        validatorModuleRef.current = mod
+        return mod
+      })
+    }
+    return validatorPromiseRef.current
+  }, [])
+
+  useEffect(() => {
+    void startValidatorLoad().catch((err) => {
+      console.error('Failed to preload validation module', err)
+    })
+  }, [startValidatorLoad])
 
   const trackInfo = useMemo(() => {
     return curriculum ? getCurriculumTrackInfo(curriculum) : null
@@ -86,19 +110,52 @@ export function CurriculumApp() {
     target: HTMLInputElement
   }
 
-  const loadCurriculumFromJsonText = (jsonText: string, sourceDescription: string) => {
+  const loadCurriculumFromJsonText = async (
+    jsonText: string,
+    sourceDescription: string,
+    options: { waitForValidator: boolean },
+  ) => {
     try {
       const json = JSON.parse(jsonText)
-      const validated = validateCurriculumJson(json)
-      if (!validated.ok) {
-        console.error('Curriculum JSON schema validation failed:', validated.error)
-        setStatus(`Invalid curriculum JSON: ${validated.error}`, true)
-        return
+
+      let curriculum: Curriculum
+      const validator = validatorModuleRef.current
+
+      if (options.waitForValidator) {
+        if (!validator) {
+          setIsValidatorLoading(true)
+        }
+        try {
+          const mod = await startValidatorLoad()
+          const validated = mod.validateCurriculumJson(json)
+          if (!validated.ok) {
+            console.error('Curriculum JSON schema validation failed:', validated.error)
+            setStatus(`Invalid curriculum JSON: ${validated.error}`, true)
+            return
+          }
+          curriculum = validated.curriculum
+        } catch (err) {
+          console.error('Failed to load validation module', err)
+          setStatus('Failed to load JSON validator.', true)
+          return
+        } finally {
+          setIsValidatorLoading(false)
+        }
+      } else if (validator) {
+        const validated = validator.validateCurriculumJson(json)
+        if (!validated.ok) {
+          console.error('Curriculum JSON schema validation failed:', validated.error)
+          setStatus(`Invalid curriculum JSON: ${validated.error}`, true)
+          return
+        }
+        curriculum = validated.curriculum
+      } else {
+        curriculum = json as Curriculum
       }
 
-      setCurriculum(validated.curriculum)
-      const movedIds = Array.isArray(validated.curriculum?.courses)
-        ? (validated.curriculum.courses as Array<{ id?: unknown; new_semester?: unknown }>)
+      setCurriculum(curriculum)
+      const movedIds = Array.isArray(curriculum?.courses)
+        ? (curriculum.courses as Array<{ id?: unknown; new_semester?: unknown }>)
             .filter((c) => typeof c?.id === 'string' && c?.new_semester != null)
             .map((c) => String(c.id))
         : []
@@ -132,7 +189,7 @@ export function CurriculumApp() {
     const file = input.files[0]
     const reader = new FileReader()
     reader.onload = () => {
-      loadCurriculumFromJsonText(String(reader.result), file.name)
+      void loadCurriculumFromJsonText(String(reader.result), file.name, { waitForValidator: true })
     }
     reader.readAsText(file)
   }
@@ -156,7 +213,7 @@ export function CurriculumApp() {
         }
         return response.text()
       })
-      .then((text) => loadCurriculumFromJsonText(text, relativePath))
+      .then((text) => loadCurriculumFromJsonText(text, relativePath, { waitForValidator: false }))
       .catch((err) => {
         console.error('Failed to load curriculum from', relativePath, err)
         setStatus(`Failed to load ${relativePath}`, true)
@@ -718,6 +775,16 @@ export function CurriculumApp() {
               Choose File
             </label>
             <span className={`status-text${statusError ? ' error' : ''}`}>{status}</span>
+            {isValidatorLoading && (
+              <output
+                className="validator-loading"
+                aria-live="polite"
+                aria-label="Loading JSON validator"
+                title="Loading JSON validator"
+              >
+                <span className="spinner" aria-hidden="true" />
+              </output>
+            )}
 
             <button
               type="button"
